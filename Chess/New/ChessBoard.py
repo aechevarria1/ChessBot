@@ -1,7 +1,7 @@
 import time,copy,random
 import Pieces
 
-class Board:
+class Board(object):
     def __init__(self):
         self.remainingWhitePieces = []
         self.remainingBlackPieces = []
@@ -97,11 +97,11 @@ class Board:
         for letter in self.letters:
             for number in self.numbers:
                 if letter+number not in self.layout.keys():
-                    self.layout(letter+number) = 0
+                    self.layout[letter+number] = 0
 
     
     def __eq__(self, val):
-        passs
+        pass
     
     def __ne__(self,val):
         return not(self.__eq__(val))
@@ -110,7 +110,7 @@ class Board:
         pass
         
     def __str__(self):
-        return self.layout
+        return str(self.layout)
     
     def resetBoard(self):
         self.__init__()
@@ -118,7 +118,7 @@ class Board:
     def getPieceAt(self, position):
         position = position.upper()
         assert len(position) == 2
-        assert (position[0] in self.letter) and (position[1] in self.numbers)
+        assert (position[0] in self.letters) and (position[1] in self.numbers)
         return self.layout[position]
 
     def getWhitePieces(self):
