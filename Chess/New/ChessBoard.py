@@ -9,13 +9,7 @@ class Board:
         self.layout = {}
         self.letters = "ABCDEFGH"
         self.numbers = "12345678"
-        
-                for i in xrange(8):
-            self.rows.append(Row(i))
-            self.cols.append(Column(i))
-        self.remainingWhitePieces = []
-        self.remainingBlackPieces = []
-        
+    
         for i in xrange(8):
             #Black Pawns
             newPawn = Pieces.Pawn(self.letters[i]+"7", "Black", self)

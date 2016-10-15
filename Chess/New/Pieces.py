@@ -1,7 +1,7 @@
 class Piece(object):
     def __init__(self, position, color, board):
         position = position.upper()
-        assert  (length(position)==2) and (position[0] in "ABCDEFGH") and  (position[1] in "12345678")
+        assert  (len(position)==2) and (position[0] in "ABCDEFGH") and  (position[1] in "12345678")
         self.position = position
         color = color.upper()
         assert (color == "WHITE" or color == "BLACK")
@@ -28,7 +28,7 @@ class Piece(object):
         
     def setPosition(self, position):
         position = position.upper()
-        assert (length(position)==2) and (position[0] in "ABCDEFGH") and  (position[1] in "12345678")
+        assert (len(position)==2) and (position[0] in "ABCDEFGH") and  (position[1] in "12345678")
         self.position = position
             
     def getColor(self):
@@ -40,7 +40,7 @@ class Piece(object):
     def getMoves(self):
         return []
     
-    getMoveStatus(self):
+    def getMoveStatus(self):
         """
         Used to determine if a pawn can double move or
         if a king-rook pair can castle
