@@ -18,7 +18,9 @@ class Piece(object):
     
     def __eq__(self, val):
         """ Compare position of val to position of self. Return true if the two pieces have the same position. """
-        return val.getPosition()==self.getPosition()
+        if type(val)== type(self):
+            return val.getPosition()==self.getPosition() and self.getName()==val.getName()
+        return False
     
     def __ne__(self, val):
         return not(self.__eq__(val))

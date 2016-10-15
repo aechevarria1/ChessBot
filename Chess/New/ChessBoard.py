@@ -11,89 +11,69 @@ class Board(object):
         self.numbers = "12345678"
     
         for i in xrange(8):
-            #Black Pawns
+            #Make Black Pawns
             newPawn = Pieces.Pawn(self.letters[i]+"7", "Black", self)
             self.remainingBlackPieces.append(newPawn)
             self.layout[newPawn.getPosition()] = newPawn
         
         for i in xrange(8):
-            #White Pawns
+            #Make White Pawns
             newPawn = Pieces.Pawn(self.letters[i]+"2", "White", self)
             self.remainingWhitePieces.append(newPawn)
             self.layout[newPawn.getPosition()] = newPawn
             
-        #Rooks
-        newRook = Pieces.Rook("A8","Black", self)
-        self.remainingBlackPieces.append(newRook)
-        self.layout[newRook.getPosition()] = newRook
+        #Make Bishop, Knight, and Rook
+        bishopPositions = ["C1","C8","F1","F8"]
+        rookPositions = ['A1','A8','H1','H8']
+        knightPositions = ['B1','B8','G1','G8']
         
-        newRook = Pieces.Rook("H8","Black", self)
-        self.remainingBlackPieces.append(newRook)
-        self.layout[newRook.getPosition()] = newRook
-        
-        newRook = Pieces.Rook("A1","White", self)
-        self.remainingWhitePieces.append(newRook)
-        self.layout[newRook.getPosition()] = newRook
-        
-        newRook = Pieces.Rook("H1","White", self)
-        self.remainingWhitePieces.append(newRook)
-        self.layout[newRook.getPosition()] = newRook
-        
-        
-        #Knights
-        newKnight = Pieces.Knight("B8","Black", self)
-        self.remainingBlackPieces.append(newKnight)
-        self.layout[newKnight.getPosition()] = newKnight
-        
-        newKnight = Pieces.Knight("G8","Black", self)
-        self.remainingBlackPieces.append(newKnight)
-        self.layout[newKnight.getPosition()] = newKnight
+        for i in xrange(4):
+            if i%2==0:
+                color="WHITE"
+            else:
+                color="BLACK"
+            newBishop = Pieces.Bishop(bishopPositions[i],color, self)
+            self.layout[bishopPositions[i]] = newBishop
+            
+            newRook = Pieces.Rook(rookPositions[i],color, self)
+            self.layout[rookPositions[i]] = newRook
 
-
-        newKnight = Pieces.Knight("B1","White", self)
-        self.remainingWhitePieces.append(newKnight)
-        self.layout[newKnight.getPosition()] = newKnight
-
-
-        newKnight = Pieces.Knight("G1","White", self)
-        self.remainingWhitePieces.append(newKnight)
-        self.layout[newKnight.getPosition()] = newKnight
+            newKnight = Pieces.Knight(knightPositions[i],color, self)
+            self.layout[knightPositions[i]] = newKnight            
+            
+            if i%2==0:
+                self.remainingWhitePieces.append(newBishop)
+                self.remainingWhitePieces.append(newRook)
+                self.remainingWhitePieces.append(newKnight)
+            else:
+                self.remainingBlackPieces.append(newBishop)
+                self.remainingBlackPieces.append(newRook)
+                self.remainingBlackPieces.append(newKnight)
+            
         
-        #Bishops
-        newBishop = Pieces.Bishop("C8","Black", self)
-        self.remainingBlackPieces.append(newBishop)
-        self.layout[newBishop.getPosition()] = newBishop
+        #Make Queens and Kings
+        queenPositions = ["D1","D8"]
+        kingPositions = ['E1','E8']
+ 
+        for i in xrange(2):
+            if i%2==0:
+                color="WHITE"
+            else:
+                color="BLACK"
+            newQueen = Pieces.Queen(queenPositions[i],color, self)
+            self.layout[queenPositions[i]] = newQueen
+            
+            newKing = Pieces.King(kingPositions[i],color, self)
+            self.layout[kingPositions[i]] = newKing     
+            
+            if i%2==0:
+                self.remainingWhitePieces.append(newQueen)
+                self.remainingWhitePieces.append(newKing)
+            else:
+                self.remainingBlackPieces.append(newQueen)
+                self.remainingBlackPieces.append(newKing)
         
-        newBishop = Pieces.Bishop("F8","Black", self)
-        self.remainingBlackPieces.append(newBishop)
-        self.layout[newBishop.getPosition()] = newBishop
-        
-        newBishop = Pieces.Bishop("C1","White", self)
-        self.remainingWhitePieces.append(newBishop)
-        self.layout[newBishop.getPosition()] = newBishop
-        
-        newBishop = Pieces.Bishop("F1","White", self)
-        self.remainingWhitePieces.append(newBishop)
-        self.layout[newBishop.getPosition()] = newBishop
-        
-        #Queens
-        newQueen = Pieces.Queen("D8","Black", self)
-        self.remainingBlackPieces.append(newQueen)
-        self.layout[newQueen.getPosition()] = newQueen
-        
-        newQueen = Pieces.Queen("D1","White", self)
-        self.remainingWhitePieces.append(newQueen)
-        self.layout[newQueen.getPosition()] = newQueen
-        
-        #Kings
-        newKing = Pieces.King("E8","Black", self)
-        self.remainingBlackPieces.append(newKing)
-        self.layout[newKing.getPosition()] = newKing
-        
-        newKing = Pieces.King("E1","White", self)
-        self.remainingWhitePieces.append(newKing)
-        self.layout[newKing.getPosition()] = newKing
-        
+        #Fill remaining squars with 0
         for letter in self.letters:
             for number in self.numbers:
                 if letter+number not in self.layout.keys():
@@ -101,7 +81,9 @@ class Board(object):
 
     
     def __eq__(self, val):
-        pass
+        if type(val)==Board:
+            return self.layout==val.getLayout()
+        return False
     
     def __ne__(self,val):
         return not(self.__eq__(val))
@@ -116,18 +98,25 @@ class Board(object):
         self.__init__()
 
     def getPieceAt(self, position):
+        """
+        Given a position, returns the piece at that position
+        """
         position = position.upper()
         assert len(position) == 2
         assert (position[0] in self.letters) and (position[1] in self.numbers)
         return self.layout[position]
-
+        
     def getWhitePieces(self):
         return self.remainingWhitePieces
+        
     def getBlackPieces(self):
         return self.remainingBlackPieces
-    
+        
     def getAllRemainingPieces(self):
         return self.remainingWhitePieces + self.remainingBlackPieces
+        
+    def getLayout(self):
+        return self.layout
         
     def saveGame(self):
         pass
