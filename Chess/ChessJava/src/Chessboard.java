@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Chessboard {
@@ -15,7 +16,7 @@ public class Chessboard {
 	private long blackKnight;
 	private long blackRook;
 	private long blackPawn;
-
+	private long[] boardInformation;
 	//Board Instantiation
 	public Chessboard(){
 		//To make an instance of a new Chessboard
@@ -32,12 +33,21 @@ public class Chessboard {
 		blackKnight = 0b0100001000000000000000000000000000000000000000000000000000000000L;
 		blackRook   = 0b1000000100000000000000000000000000000000000000000000000000000000L;
 		blackPawn   = 0b0000000011111111000000000000000000000000000000000000000000000000L;
+		boardInformation = new long[] {this.whiteKing,this.whiteQueen,this.whiteBishop,this.whiteKnight,this.whiteRook,this.whitePawn,this.blackKing,this.blackQueen,this.blackBishop,this.blackKnight,this.blackRook,this.blackPawn};
 	}
 	public Chessboard(String directory, String infoType){
 		//To load a chess game.
 		//TODO
 	}
 
+	//Preloading All Possible King and Knight Moves
+	public void loadKnightMoves(){
+		
+	}
+	public void loadKingMoves(){
+		
+	}
+	
 	//Move Generation
 	public Long generateKingMoves (int teamColor){
 		//White Team Color = 1
@@ -74,6 +84,10 @@ public class Chessboard {
 		//Black Team Color = 0
 		//TODO
 		return new Long(1);
+	}
+	
+	public void updateBoardInformation(){
+		this.boardInformation = new long[] {this.whiteKing,this.whiteQueen,this.whiteBishop,this.whiteKnight,this.whiteRook,this.whitePawn,this.blackKing,this.blackQueen,this.blackBishop,this.blackKnight,this.blackRook,this.blackPawn};
 	}
 	
 	// Piece Combinations
@@ -122,8 +136,10 @@ public class Chessboard {
 		
 		//Make board object and collect pieces
 		String[][] board = new String[8][8];
-		long [] whitePieces = {this.whiteKing, this.whiteQueen, this.whiteBishop, this.whiteKnight, this.whiteRook, this.whitePawn};
-		long [] blackPieces = {this.blackKing, this.blackQueen, this.blackBishop, this.blackKnight, this.blackRook, this.blackPawn};
+		//long [] whitePieces = {this.whiteKing, this.whiteQueen, this.whiteBishop, this.whiteKnight, this.whiteRook, this.whitePawn};
+		//long [] blackPieces = {this.blackKing, this.blackQueen, this.blackBishop, this.blackKnight, this.blackRook, this.blackPawn};
+		long [] whitePieces = Arrays.copyOfRange(this.boardInformation, 0, 6);
+		long [] blackPieces = Arrays.copyOfRange(this.boardInformation, 6, 12);
 		String [] pieceTypes = {"K","Q","B","N","R","P"};
 		
 		//Populate the board

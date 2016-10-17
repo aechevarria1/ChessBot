@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Scratchwork {
@@ -84,6 +85,8 @@ public class Scratchwork {
 		*/
 		Chessboard myBoard = new Chessboard();
 		System.out.println(myBoard);
+		
+
 	}
 	
 }
