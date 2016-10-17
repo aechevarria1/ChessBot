@@ -16,7 +16,7 @@ public class Chessboard {
 	private long blackRook;
 	private long blackPawn;
 
-
+	//Board Instantiation
 	public Chessboard(){
 		//To make an instance of a new Chessboard
 		whiteKing   = 0b0000000000001000L;
@@ -33,18 +33,64 @@ public class Chessboard {
 		blackRook   = 0b1000000100000000000000000000000000000000000000000000000000000000L;
 		blackPawn   = 0b0000000011111111000000000000000000000000000000000000000000000000L;
 	}
-	
-	//To make a Chessboard from previous game information
 	public Chessboard(String directory, String infoType){
-		//To make a load a chess game.
+		//To load a chess game.
 		//TODO
 	}
 
+	//Move Generation
+	public Long generateKingMoves (int teamColor){
+		//White Team Color = 1
+		//Black Team Color = 0
+		//TODO
+		return new Long(1);
+	}
+	public Long generateQueenMoves (int teamColor){
+		//White Team Color = 1
+		//Black Team Color = 0
+		//TODO
+		return new Long(1);
+	}
+	public Long generateBishopMoves (int teamColor){
+		//White Team Color = 1
+		//Black Team Color = 0
+		//TODO
+		return new Long(1);
+	}
+	public Long generateKnightMoves (int teamColor){
+		//White Team Color = 1
+		//Black Team Color = 0
+		//TODO
+		return new Long(1);
+	}
+	public Long generateRookMoves (int teamColor){
+		//White Team Color = 1
+		//Black Team Color = 0
+		//TODO
+		return new Long(1);
+	}
+	public Long generatePawnMoves (int teamColor){
+		//White Team Color = 1
+		//Black Team Color = 0
+		//TODO
+		return new Long(1);
+	}
 	
+	// Piece Combinations
+	private Long whitePieces(){
+		Long allWhitePieces = this.whiteKing|this.whiteQueen|this.whiteBishop|this.whiteKnight|this.whiteRook|this.whitePawn;
+		return allWhitePieces;
+	}
+	private Long blackPieces(){
+		Long allBlackPieces = this.blackKing|this.blackQueen|this.blackBishop|this.blackKnight|this.blackRook|this.blackPawn;
+		return allBlackPieces;
+	}
+	private Long allPieces(){
+		Long allPieces = this.whiteKing|this.whiteQueen|this.whiteBishop|this.whiteKnight|this.whiteRook|this.whitePawn|this.blackKing|this.blackQueen|this.blackBishop|this.blackKnight|this.blackRook|this.blackPawn;
+		return allPieces;
+	}
 	
-	
-
-	
+	//Visualizing Boards
 	private static List<Integer> bitPositions(long number) {
 		//Get the integer indeces of the ones in a 64 bit long
 	    List<Integer> positions = new ArrayList<>();
@@ -58,7 +104,6 @@ public class Chessboard {
 	    }
 	    return positions;
 	}
-	
 	public static String gridToString(String[][] board){
 		//Convert an 8 by 8 array into a string version of a board
 		String val = new String();
@@ -72,7 +117,6 @@ public class Chessboard {
 		   }
 		   return val;
 		}
-	
 	public String[][] makeFullBoard(){
 		//Create an 8x8 array which contains all the pieces of the board
 		
@@ -97,7 +141,6 @@ public class Chessboard {
 		}
 		return board;
 	}
-	
 	public String toString(){
 		//Prints a representation of the board
 		String[][] myBoard = this.makeFullBoard();
