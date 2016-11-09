@@ -83,9 +83,23 @@ public class Scratchwork {
 		val = gridToString(chessBoard);
 		System.out.println(val);
 		*/
+		/*
 		Chessboard myBoard = new Chessboard();
 		System.out.println(myBoard);
-		
+		Long whiteMoves = myBoard.generatePawnMoves (1);
+		Long blackMoves = myBoard.generatePawnMoves (0);
+		System.out.println(Long.toBinaryString(whiteMoves));
+		System.out.println(Long.toBinaryString(blackMoves));
+		*/
+		long y = (long) 0b101111110011111111L;
+		System.out.println(Long.toBinaryString(y));
+		List<Integer> x = bitPositions(y);
+		List<Integer> z = new ArrayList<Integer> (x.size());
+		for (int i=0;i<x.size();i++){
+			z.add(63-x.get(i));
+		}
+		System.out.println(x);
+		System.out.println(z);
 
 	}
 	
