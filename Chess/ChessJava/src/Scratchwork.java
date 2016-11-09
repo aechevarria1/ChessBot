@@ -91,6 +91,7 @@ public class Scratchwork {
 		System.out.println(Long.toBinaryString(whiteMoves));
 		System.out.println(Long.toBinaryString(blackMoves));
 		*/
+		/*
 		long y = (long) 0b101111110011111111L;
 		System.out.println(Long.toBinaryString(y));
 		List<Integer> x = bitPositions(y);
@@ -100,7 +101,22 @@ public class Scratchwork {
 		}
 		System.out.println(x);
 		System.out.println(z);
-
+		*/
+		/*
+		Chessboard myBoard = new Chessboard();
+		Long bitboard = 0b0000000100000001000000010000000100000001000000010000000100000001L;
+		Long expectedResult = 0b0000000000000000000000000000000000000000000000000000000011111111L;
+		Long result = myBoard.rotateCW90Deg (bitboard);
+		System.out.println(Long.toBinaryString(expectedResult));
+		System.out.println(Long.toBinaryString(result));
+		System.out.println(result==expectedResult);
+		System.out.println(result.equals(expectedResult));
+		*/
+		/*
+		System.out.println(5/3);
+		System.out.println(5.0/3);
+		System.out.println(5);
+		*/
 	}
 	
 }

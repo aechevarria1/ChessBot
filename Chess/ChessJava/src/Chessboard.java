@@ -18,10 +18,15 @@ public class Chessboard {
 	private long BR;
 	private long BP;
 	private long[] boardInformation;
-	HashMap<Integer,Long> kingMoveMap;
-	HashMap<Integer,Long> knightMoveMap;
+	HashMap<Integer,Long> kingMoveMap = new HashMap<Integer,Long>();
+	HashMap<Integer,Long> knightMoveMap = new HashMap<Integer,Long>();
+	HashMap<Integer,HashMap<Long,Long>> fileOccupancyMoves = new HashMap<Integer,HashMap<Long,Long>>();
 	//Board Instantiation
 	public Chessboard(){
+		loadKingMoves();
+		loadKnightMoves();
+		loadSlidingOccupancyHashMap();
+		
 		//To make an instance of a new Chessboard
 		WK = 0b0000000000001000L;
 		WQ = 0b0000000000010000L;
@@ -43,9 +48,9 @@ public class Chessboard {
 		//TODO
 	}
 
-	//Preloading All Possible King and Knight Moves
+	//Preloading All Possible King and Knight and Sliding Moves
 	public void loadKnightMoves(){
-
+		//Pre-loads the possible moves a knight can make.
 		Long leftMostColumn         = 0b1000000010000000100000001000000010000000100000001000000010000000L;
 		Long rightMostColumn        = 0b0000000100000001000000010000000100000001000000010000000100000001L;
 		Long leftSecondMostColumn   = leftMostColumn>>>1;
@@ -86,22 +91,143 @@ public class Chessboard {
 		}
 	}
 	public void loadKingMoves(){
-		//TODO
-		kingMoveMap
+		//Pre-loads the possible moves a king can make.
+		Long leftMostColumn         = 0b1000000010000000100000001000000010000000100000001000000010000000L;
+		Long rightMostColumn        = 0b0000000100000001000000010000000100000001000000010000000100000001L;
+
+		for (int i=0;i<64;i++){
+			Long s = 0b1L<<i;
+			Long moves;
+			Long a = s<<9;
+			Long b = s<<8;
+			Long c = s<<7;
+			Long d = s<<1;
+			Long e = s>>>1;
+			Long f = s>>>7;
+			Long g = s>>>8;
+			Long h = s>>>9;
+			//In the leftmost column
+			if ((s & ~leftMostColumn)==0){
+				moves = b|c|e|g|h;
+			}
+			//In the rightmost column
+			else if ((s & ~rightMostColumn)==0){
+				moves = a|b|d|f|g;
+			}
+			//In the middle columns
+			else{
+				moves = a|b|c|d|e|f|g|h;
+			}
+			kingMoveMap.put(i, moves);
+		}
+	}
+	public void loadSlidingOccupancyHashMap(){
+		//Pre-loads the available moves for horizontally sliding pieces. Columns must be converted to rows before use for vertical movement.
+		for (int i=0;i<8;i++){
+			fileOccupancyMoves.put(i, new HashMap<Long,Long>());
+		}
+		for (Long i=0L;i<256L;i++){
+			Long occupancy = i;
+			List<Integer> positions = bitPositions(occupancy);
+			for (int j=0;j<positions.size();j++){
+				int pos = positions.get(j);
+				Long s = 0b1L<<pos;
+				Long moves = 0b0L;
+
+				// Get moves to the left
+				int k=1;
+				Long newMove = 0b1L;
+				while (newMove!=0){
+					newMove = ((s<<k)& 0b11111111L); //only keep moves on this row
+					moves = moves | newMove;
+					newMove = newMove & ~occupancy; //stop when we hit another piece
+					k = k+1;
+				}
+				// Get moves to the left
+				k=1;
+				newMove = 0b1L;
+				while (newMove!=0){
+					newMove = ((s>>k)& 0b11111111L); //only keep moves on this row
+					moves = moves | newMove; //add this to the moves
+					newMove = newMove & ~occupancy; //stop when we hit another piece
+					k = k+1;
+				}
+				fileOccupancyMoves.get(pos).put(occupancy, moves);
+			}
+		}
+		
 	}
 	
 	//Move Generation
 	public Long generateKingMoves (int teamColor){
 		//White Team Color = 1
 		//Black Team Color = 0
-		//TODO
-		return new Long(1);
+		
+		//TODO castling
+		
+		Long king;
+		Long validMoves = 0b0L;
+		Long friendlyPieces;
+		if (teamColor==1){
+			king = WK;
+			friendlyPieces = whitePieces();
+		}
+		else{
+			king = BK;
+			friendlyPieces = blackPieces();
+		}
+		List<Integer> ind = bitPositions(king);
+		for (int i=0;i<ind.size();i++){
+			validMoves = validMoves| knightMoveMap.get(ind.get(i));
+		}
+		validMoves = validMoves & ~friendlyPieces;
+		return validMoves;
 	}
+	
 	public Long generateQueenMoves (int teamColor){
 		//White Team Color = 1
 		//Black Team Color = 0
+		
+		Long queens;
+		Long validMoves;
+		Long friendlyPieces;
+		Long allPieces = allPieces();
+		if (teamColor==1){
+			queens = WQ;
+			friendlyPieces = whitePieces();
+		}
+		else{
+			queens = BQ;
+			friendlyPieces = blackPieces();
+		}
+		
+		List<Integer> ind = bitPositions(queens);
+		Long horizontals = 0b0L;
+		Long verticals = 0b0L;
+		
+		for (int i=0;i<ind.size();i++){
+			int shiftNum = 8*((ind.get(i))/8);
+			int file = (ind.get(i))%8;
+			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
+			horizontals = horizontals|fileOccupancyMoves.get(file).get(occupancyNum);
+		}
+		
+		Long rotatedQueens = rotateCW90Deg(queens);
+		ind = bitPositions(rotatedQueens);
+		for (int i=0;i<ind.size();i++){
+			int shiftNum = 8*((ind.get(i))/8);
+			int file = (ind.get(i))%8;
+			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
+			verticals = verticals|fileOccupancyMoves.get(file).get(occupancyNum);
+		}
+		verticals = rotateCCW90Deg(verticals);
+		
+		Long diagonals = 0b0L;
 		//TODO
-		return new Long(1);
+		
+		validMoves = (horizontals|verticals|diagonals)& ~friendlyPieces;
+		
+		return validMoves;
 	}
 	public Long generateBishopMoves (int teamColor){
 		//White Team Color = 1
@@ -127,7 +253,7 @@ public class Chessboard {
 		}
 		List<Integer> ind = bitPositions(knights);
 		for (int i=0;i<ind.size();i++){
-			validMoves = validMoves| knightMoveMap.get(63-ind.get(i));
+			validMoves = validMoves| knightMoveMap.get(ind.get(i));
 		}
 		validMoves = validMoves & ~friendlyPieces;
 		return validMoves;
@@ -135,8 +261,43 @@ public class Chessboard {
 	public Long generateRookMoves (int teamColor){
 		//White Team Color = 1
 		//Black Team Color = 0
-		//TODO
-		return new Long(1);
+
+		Long rooks;
+		Long validMoves = 0b0L;
+		Long friendlyPieces;
+		Long allPieces = allPieces();
+		if (teamColor==1){
+			rooks = WR;
+			friendlyPieces = whitePieces();
+		}
+		else{
+			rooks = BR;
+			friendlyPieces = blackPieces();
+		}
+		
+		List<Integer> ind = bitPositions(rooks);
+		Long horizontals = 0b0L;
+		Long verticals = 0b0L;
+		
+		for (int i=0;i<ind.size();i++){
+			int shiftNum = 8*((ind.get(i))/8);
+			int file = (ind.get(i))%8;
+			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
+			horizontals = horizontals|fileOccupancyMoves.get(file).get(occupancyNum);
+		}
+		
+		Long rotatedRooks = rotateCW90Deg(rooks);
+		ind = bitPositions(rotatedRooks);
+		for (int i=0;i<ind.size();i++){
+			int shiftNum = 8*((ind.get(i))/8);
+			int file = (ind.get(i))%8;
+			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
+			verticals = verticals|fileOccupancyMoves.get(file).get(occupancyNum);
+		}
+		verticals = rotateCCW90Deg(verticals);
+		validMoves = (horizontals|verticals)& ~friendlyPieces;
+		
+		return validMoves;
 	}
 	public Long generatePawnMoves (int teamColor){
 		//White Team Color = 1
@@ -209,16 +370,42 @@ public class Chessboard {
 		return allPieces;
 	}
 	
+	//Rotating bitboards
+	public Long rotateCW90Deg(Long bitboard){
+		//00000001 00000001 00000001 00000001 00000001 00000001 00000001 00000001
+		//00000000 00000000 00000000 00000000 00000000 00000000 00000000 11111111
+
+		Long result = 0L;
+		for (int i=0;i<64;i++){
+			Long valAti = (bitboard>>>i)&0b1L;
+			int amountToShift = 8*(i%8)+(7-i/8);
+			result = result | (valAti<<amountToShift);
+		}
+		return result;
+	}
+	public Long rotateCCW90Deg(Long bitboard){
+		//11111111 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+		//10000000 10000000 10000000 10000000 10000000 10000000 10000000 10000000
+
+		Long result = 0L;
+		for (int i=0;i<64;i++){
+			Long valAti = (bitboard>>>i)&0b1L;
+			int amountToShift = 8*(7-i%8)+(i/8);
+			result = result | (valAti<<amountToShift);
+		}
+		return result;
+	}
+	
 	//Visualizing Boards
 	private static List<Integer> bitPositions(long number) {
 		//Get the integer indeces of the ones in a 64 bit long
 	    List<Integer> positions = new ArrayList<>();
-	    int position = 63;
+	    int position = 0;
 	    while (number != 0) {
 	        if ((number & 1) != 0) {
 	            positions.add(position);
 	        }
-	        position--;
+	        position++;
 	        number = number >>> 1;
 	    }
 	    return positions;
@@ -254,10 +441,10 @@ public class Chessboard {
 			List<Integer> whitePieceIndeces = bitPositions(currentPieceWhite);
 			List<Integer> blackPieceIndeces = bitPositions(currenntPieceBlack);
 			for(int j:whitePieceIndeces){
-				board[j/8][j%8] = "W"+pieceTypes[i];
+				board[(63-j)/8][(63-j)%8] = "W"+pieceTypes[i];
 			}
 			for(int j:blackPieceIndeces){
-				board[j/8][j%8] = "B"+pieceTypes[i];
+				board[(63-j)/8][(63-j)%8] = "B"+pieceTypes[i];
 			}
 		}
 		return board;
