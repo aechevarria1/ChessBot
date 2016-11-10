@@ -28,15 +28,15 @@ public class Chessboard {
 		loadSlidingOccupancyHashMap();
 		
 		//To make an instance of a new Chessboard
-		WK = 0b0000000000001000L;
-		WQ = 0b0000000000010000L;
+		WK = 0b0000000000010000L;
+		WQ = 0b0000000000001000L;
 		WB = 0b0000000000100100L;
 		WN = 0b0000000001000010L;
 		WR = 0b0000000010000001L;
 		WP = 0b1111111100000000L;
 		
-		BK = 0b0000100000000000000000000000000000000000000000000000000000000000L;
-		BQ = 0b0001000000000000000000000000000000000000000000000000000000000000L;
+		BK = 0b0001000000000000000000000000000000000000000000000000000000000000L;
+		BQ = 0b0000100000000000000000000000000000000000000000000000000000000000L;
 		BB = 0b0010010000000000000000000000000000000000000000000000000000000000L;
 		BN = 0b0100001000000000000000000000000000000000000000000000000000000000L;
 		BR = 0b1000000100000000000000000000000000000000000000000000000000000000L;
@@ -47,26 +47,46 @@ public class Chessboard {
 		//To load a chess game.
 		//TODO
 	}
+	public Chessboard(long[] givenBoardInformation){
+		//To load a chess game from a collecton of information about pieces.
+		loadKingMoves();
+		loadKnightMoves();
+		loadSlidingOccupancyHashMap();
+		
+		WK = givenBoardInformation[0];
+		WQ = givenBoardInformation[1];
+		WB = givenBoardInformation[2];
+		WN = givenBoardInformation[3];
+		WR = givenBoardInformation[4];
+		WP = givenBoardInformation[5];
+		BK = givenBoardInformation[6];
+		BQ = givenBoardInformation[7];
+		BB = givenBoardInformation[8];
+		BN = givenBoardInformation[9];
+		BR = givenBoardInformation[10];
+		BP = givenBoardInformation[11];
+		boardInformation = givenBoardInformation;
+	}
 
 	//Preloading All Possible King and Knight and Sliding Moves
 	public void loadKnightMoves(){
 		//Pre-loads the possible moves a knight can make.
-		Long leftMostColumn         = 0b1000000010000000100000001000000010000000100000001000000010000000L;
-		Long rightMostColumn        = 0b0000000100000001000000010000000100000001000000010000000100000001L;
-		Long leftSecondMostColumn   = leftMostColumn>>>1;
-		Long rightSecondMostColumn  = rightMostColumn<<1;
+		Long rightMostColumn       = 0b1000000010000000100000001000000010000000100000001000000010000000L;
+		Long leftMostColumn        = 0b0000000100000001000000010000000100000001000000010000000100000001L;
+		Long leftSecondMostColumn  = leftMostColumn<<1;
+		Long rightSecondMostColumn = rightMostColumn>>>1;
 
 		for (int i=0;i<64;i++){
 			Long s = 0b1L<<i;
 			Long moves;
-			Long a = s<<17;
-			Long b = s<<15;
-			Long c = s<<10;
-			Long d = s<<6;
-			Long e = s>>>6;
-			Long f = s>>>10;
-			Long g = s>>>15;
-			Long h = s>>>17;
+			Long a = s>>>15;
+			Long b = s>>>17;
+			Long c = s>>>6;
+			Long d = s>>>10;
+			Long e = s<<10;
+			Long f = s<<6;
+			Long g = s<<17;
+			Long h = s<<15;
 			//In the leftmost column
 			if ((s & ~leftMostColumn)==0){
 				moves = b|d|f|h;
@@ -92,20 +112,20 @@ public class Chessboard {
 	}
 	public void loadKingMoves(){
 		//Pre-loads the possible moves a king can make.
-		Long leftMostColumn         = 0b1000000010000000100000001000000010000000100000001000000010000000L;
-		Long rightMostColumn        = 0b0000000100000001000000010000000100000001000000010000000100000001L;
+		Long rightMostColumn = 0b1000000010000000100000001000000010000000100000001000000010000000L;
+		Long leftMostColumn  = 0b0000000100000001000000010000000100000001000000010000000100000001L;
 
 		for (int i=0;i<64;i++){
 			Long s = 0b1L<<i;
 			Long moves;
-			Long a = s<<9;
-			Long b = s<<8;
-			Long c = s<<7;
+			Long a = s>>>7;
+			Long b = s>>>8;
+			Long c = s>>>9;
 			Long d = s<<1;
 			Long e = s>>>1;
-			Long f = s>>>7;
-			Long g = s>>>8;
-			Long h = s>>>9;
+			Long f = s<<9;
+			Long g = s<<8;
+			Long h = s<<7;
 			//In the leftmost column
 			if ((s & ~leftMostColumn)==0){
 				moves = b|c|e|g|h;
@@ -134,7 +154,7 @@ public class Chessboard {
 				Long s = 0b1L<<pos;
 				Long moves = 0b0L;
 
-				// Get moves to the left
+				// Get moves to the right
 				int k=1;
 				Long newMove = 0b1L;
 				while (newMove!=0){
@@ -147,7 +167,7 @@ public class Chessboard {
 				k=1;
 				newMove = 0b1L;
 				while (newMove!=0){
-					newMove = ((s>>k)& 0b11111111L); //only keep moves on this row
+					newMove = ((s>>>k)& 0b11111111L); //only keep moves on this row
 					moves = moves | newMove; //add this to the moves
 					newMove = newMove & ~occupancy; //stop when we hit another piece
 					k = k+1;
@@ -372,29 +392,67 @@ public class Chessboard {
 	
 	//Rotating bitboards
 	public Long rotateCW90Deg(Long bitboard){
-		//00000001 00000001 00000001 00000001 00000001 00000001 00000001 00000001
-		//00000000 00000000 00000000 00000000 00000000 00000000 00000000 11111111
-
+		//Rotates a given bitboard clockwise 90 degrees
+		/*
 		Long result = 0L;
 		for (int i=0;i<64;i++){
 			Long valAti = (bitboard>>>i)&0b1L;
 			int amountToShift = 8*(i%8)+(7-i/8);
 			result = result | (valAti<<amountToShift);
 		}
+		*/
+	
+		Long result = 0L;
+		for (int i=0;i<64;i++){
+			Long valAti = (bitboard>>>i)&0b1L;
+			int amountToShift = (((i >> 3) | (i << 3)) & 63) ^ 56;
+			result = result | (valAti<<amountToShift);
+		}
+ 		
 		return result;
 	}
 	public Long rotateCCW90Deg(Long bitboard){
-		//11111111 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-		//10000000 10000000 10000000 10000000 10000000 10000000 10000000 10000000
-
+		//Rotates a given bitboard counterclockwise 90 degrees
+		/*
 		Long result = 0L;
 		for (int i=0;i<64;i++){
 			Long valAti = (bitboard>>>i)&0b1L;
 			int amountToShift = 8*(7-i%8)+(i/8);
 			result = result | (valAti<<amountToShift);
 		}
+		*/
+			
+		Long result = 0L;
+		for (int i=0;i<64;i++){
+			Long valAti = (bitboard>>>i)&0b1L;
+			int amountToShift = (((i >> 3) | (i << 3)) & 63) ^ 7;
+			result = result | (valAti<<amountToShift);
+		}
+		 
 		return result;
 	}
+	public Long rotateCW45Deg(Long bitboard){
+		//Rotates a given bitboard clockwise 45 degrees
+		Long result = 0L;
+		for (int i=0;i<64;i++){
+			Long valAti = (bitboard>>>i)&0b1L;
+			int amountToShift = (i + 8*(i&7)) & 63;
+			result = result | (valAti<<amountToShift);
+		}
+		return result;
+	}
+	public Long rotateCCW45Deg(Long bitboard){
+		//Rotates a given bitboard counterclockwise 45 degrees
+	
+		Long result = 0L;
+		for (int i=0;i<64;i++){
+			Long valAti = (bitboard>>>i)&0b1L;
+			int amountToShift = (i + 8*((i&7)^7)) & 63;
+			result = result | (valAti<<amountToShift);
+		}
+		return result;
+	}
+	
 	
 	//Visualizing Boards
 	private static List<Integer> bitPositions(long number) {
@@ -441,10 +499,10 @@ public class Chessboard {
 			List<Integer> whitePieceIndeces = bitPositions(currentPieceWhite);
 			List<Integer> blackPieceIndeces = bitPositions(currenntPieceBlack);
 			for(int j:whitePieceIndeces){
-				board[(63-j)/8][(63-j)%8] = "W"+pieceTypes[i];
+				board[7-(j/8)][(j%8)] = "W"+pieceTypes[i];
 			}
 			for(int j:blackPieceIndeces){
-				board[(63-j)/8][(63-j)%8] = "B"+pieceTypes[i];
+				board[7-(j/8)][(j%8)] = "B"+pieceTypes[i];
 			}
 		}
 		return board;
