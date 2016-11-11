@@ -275,7 +275,7 @@ public class Chessboard {
 		}
 		List<Integer> ind = bitPositions(king);
 		for (int i=0;i<ind.size();i++){
-			validMoves = validMoves| knightMoveMap.get(ind.get(i));
+			validMoves = validMoves| kingMoveMap.get(ind.get(i));
 		}
 		validMoves = validMoves & ~friendlyPieces;
 		return validMoves;
