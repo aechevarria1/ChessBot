@@ -237,4 +237,40 @@ public class ChessTest {
 		Long result = myBoard.generateKnightMoves(1);
 		assert(result.equals(expectedResult));
 	}
+	@Test
+	public void testRotate45CW() {
+		Chessboard myBoard = new Chessboard();
+		Long bitboard = 0b1000000001000000001000000001000000001000000001000000001000000001L;
+		Long expectedResult = 0b0000000000000000000000000000111111110000000000000000000000000000L;
+		Long result = myBoard.rotateCW45Deg (bitboard);
+		assert(result.equals(expectedResult));
+		//fail("Not yet implemented");
+	}
+	@Test
+	public void testRotate45CCW() {
+		Chessboard myBoard = new Chessboard();
+		Long bitboard = 0b0000000100000010000001000000100000010000001000000100000010000000L;
+		Long expectedResult = 0b0000000000000000000000000000111111110000000000000000000000000000L;
+		Long result = myBoard.rotateCCW45Deg (bitboard);
+		assert(result.equals(expectedResult));
+		//fail("Not yet implemented");
+	}
+	@Test
+	public void testRotate45CWUnrotate() {
+		Chessboard myBoard = new Chessboard();
+		Long bitboard = 0b0000000100000001000000010000000100000001000000010000000100000001L;
+		Long result = myBoard.rotateCW45Deg (bitboard);
+		result = myBoard.reverseRotateCW45Deg (result);
+		assert(result.equals(bitboard));
+		//fail("Not yet implemented");
+	}
+	@Test
+	public void testRotate45CCWUnrotate() {
+		Chessboard myBoard = new Chessboard();
+		Long bitboard = 0b0000000100000001000000010000000100000001000000010000000100000001L;
+		Long result = myBoard.rotateCCW45Deg (bitboard);
+		result = myBoard.reverseRotateCCW45Deg (result);
+		assert(result.equals(bitboard));
+		//fail("Not yet implemented");
+	}
 }

@@ -117,8 +117,11 @@ public class Scratchwork {
 		System.out.println(5.0/3);
 		System.out.println(5);
 		*/
+		/*
 		Chessboard myBoard = new Chessboard();
 		System.out.println(myBoard.diagOccupancyMoves);
+		*/
+		
 	}
 	
 }

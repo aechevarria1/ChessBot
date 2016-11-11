@@ -21,9 +21,36 @@ public class Chessboard {
 	HashMap<Integer,Long> kingMoveMap = new HashMap<Integer,Long>();
 	HashMap<Integer,Long> knightMoveMap = new HashMap<Integer,Long>();
 	HashMap<Integer,HashMap<Long,Long>> fileOccupancyMoves = new HashMap<Integer,HashMap<Long,Long>>(); // maps square number to a hashmap that maps occupancy to allowed moves
+	
+	//For calculating diagonal sliding moves
 	HashMap<Integer,HashMap<Long,Long>> diagOccupancyMoves = new HashMap<Integer,HashMap<Long,Long>>(); // maps square number to a hashmap that maps occupancy to allowed moves
+	int[] CW45Order = { 7, 6,15, 5,14,23, 4,13,
+					 22,31, 3,12,21,30,39, 2,
+					 11,20,29,38,47, 1,10,19,
+					 28,37,46,55, 0, 9,18,27,
+					 36,45,54,63, 8,17,26,35,
+					 44,53,62,16,25,34,43,52,
+					 61,24,33,42,51,60,32,41,
+					 50,59,40,49,58,48,57,56};
+	int[] CCW45Order= { 0, 8, 1,16, 9, 2,24,17,
+					 10, 3,32,25,18,11, 4,40,
+					 33,26,19,12, 5,48,41,34,
+					 27,20,13, 6,56,49,42,35,
+					 28,21,14, 7,57,50,43,36,
+					 29,22,15,58,51,44,37,30,
+					 23,59,52,45,38,31,60,53,
+					 46,39,61,54,47,62,55,63};
+	HashMap<Integer,Integer> CW45Map = new HashMap<Integer,Integer>();
+	HashMap<Integer,Integer> CCW45Map = new HashMap<Integer,Integer>();
+	HashMap<Integer,Integer> reverseCW45Map = new HashMap<Integer,Integer>();
+	HashMap<Integer,Integer> reverseCCW45Map = new HashMap<Integer,Integer>();
+	int [] positionRows = {0,1,1,2,2,2,3,3,3,3,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,8,8,9,9,9,9,9,9,10,10,10,10,10,11,11,11,11,12,12,12,13,13,14};
+	int [] calculatedShifts = {0,1,3,6,10,15,21,28,36,43,49,54,58,61,63};
+	int [] sizeOfRow = {1,2,3,4,5,6,7,8,7,6,5,4,3,2,1};
+
 	//Board Instantiation
 	public Chessboard(){
+		build45RotationMaps();
 		loadKingMoves();
 		loadKnightMoves();
 		loadSlidingHorizOccupancyHashMap();
@@ -51,6 +78,7 @@ public class Chessboard {
 	}
 	public Chessboard(long[] givenBoardInformation){
 		//To load a chess game from a collection of information about pieces.
+		build45RotationMaps();
 		loadKingMoves();
 		loadKnightMoves();
 		loadSlidingHorizOccupancyHashMap();
@@ -187,9 +215,7 @@ public class Chessboard {
 	
 	public void loadSlidingDiagOccupancyHashMapDiag(){
 		//Pre-loads the available moves for diagonally sliding pieces.
-		int [] positionRows = {0,1,1,2,2,2,3,3,3,3,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,8,8,9,9,9,9,9,9,10,10,10,10,10,11,11,11,11,12,12,12,13,13,14};
-		int [] calculatedShifts = {0,1,3,6,10,15,21,28,36,43,49,54,58,61,63};
-		int [] sizeOfRow = {1,2,3,4,5,6,7,8,7,6,5,4,3,2,1};
+
 		for (int i=0;i<64;i++){
 			diagOccupancyMoves.put(i, new HashMap<Long,Long>());
 			int rowNum = positionRows[i];
@@ -272,39 +298,106 @@ public class Chessboard {
 			friendlyPieces = blackPieces();
 		}
 		
+		//Along the rows
 		List<Integer> ind = bitPositions(queens);
 		Long horizontals = 0b0L;
 		Long verticals = 0b0L;
 		
 		for (int i=0;i<ind.size();i++){
 			int shiftNum = 8*((ind.get(i))/8);
-			int file = (ind.get(i))%8;
 			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
 			horizontals = horizontals|fileOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		
+		//Along the columns
 		Long rotatedQueens = rotateCW90Deg(queens);
 		ind = bitPositions(rotatedQueens);
 		for (int i=0;i<ind.size();i++){
 			int shiftNum = 8*((ind.get(i))/8);
-			int file = (ind.get(i))%8;
 			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
 			verticals = verticals|fileOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		verticals = rotateCCW90Deg(verticals);
 		
-		Long diagonals = 0b0L;
-		//TODO
+		//Along the A8-H1 diagonal
+		Long diagonalsCW = 0b0L;
+		Long bishopsCW = rotateCW45Deg(queens);
+		ind = bitPositions(bishopsCW);
+		for (int i=0;i<ind.size();i++){
+			int rowNum = positionRows[i];
+			int shiftNum = calculatedShifts[rowNum];
+			int size = sizeOfRow[rowNum];
+			Long maxOccupancy = (long) (Math.pow(2,size)-1);
+			Long occupancyNum = (allPieces>>>shiftNum)& maxOccupancy;
+			diagonalsCW = diagonalsCW|diagOccupancyMoves.get(ind.get(i)).get(occupancyNum);
+		}
+		diagonalsCW = reverseRotateCW45Deg(diagonalsCW);
 		
-		validMoves = (horizontals|verticals|diagonals)& ~friendlyPieces;
+		//Along the A1-H8 diagonal
+		Long diagonalsCCW = 0b0L;
+		Long bishopsCCW = rotateCCW45Deg(queens);
+		ind = bitPositions(bishopsCCW);
+		for (int i=0;i<ind.size();i++){
+			int rowNum = positionRows[i];
+			int shiftNum = calculatedShifts[rowNum];
+			int size = sizeOfRow[rowNum];
+			Long maxOccupancy = (long) (Math.pow(2,size)-1);
+			Long occupancyNum = (allPieces>>>shiftNum)& maxOccupancy;
+			diagonalsCCW = diagonalsCCW|diagOccupancyMoves.get(ind.get(i)).get(occupancyNum);
+		}
+		diagonalsCCW = reverseRotateCCW45Deg(diagonalsCCW);
+
+		
+		validMoves = (horizontals|verticals|diagonalsCW|diagonalsCCW)& ~friendlyPieces;
 		
 		return validMoves;
 	}
 	public Long generateBishopMoves (int teamColor){
 		//White Team Color = 1
 		//Black Team Color = 0
-		//TODO
-		return new Long(1);
+
+		Long bishops;
+		Long validMoves = 0b0L;
+		Long friendlyPieces;
+		Long allPieces = allPieces();
+		if (teamColor==1){
+			bishops = WB;
+			friendlyPieces = whitePieces();
+		}
+		else{
+			bishops = BB;
+			friendlyPieces = blackPieces();
+		}
+		
+		//Along the A8-H1 diagonal
+		Long diagonalsCW = 0b0L;
+		Long bishopsCW = rotateCW45Deg(bishops);
+		List<Integer> ind = bitPositions(bishopsCW);
+		for (int i=0;i<ind.size();i++){
+			int rowNum = positionRows[i];
+			int shiftNum = calculatedShifts[rowNum];
+			int size = sizeOfRow[rowNum];
+			Long maxOccupancy = (long) (Math.pow(2,size)-1);
+			Long occupancyNum = (allPieces>>>shiftNum)& maxOccupancy;
+			diagonalsCW = diagonalsCW|diagOccupancyMoves.get(ind.get(i)).get(occupancyNum);
+		}
+		diagonalsCW = reverseRotateCW45Deg(diagonalsCW);
+		
+		//Along the A1-H8 diagonal
+		Long diagonalsCCW = 0b0L;
+		Long bishopsCCW = rotateCCW45Deg(bishops);
+		ind = bitPositions(bishopsCCW);
+		for (int i=0;i<ind.size();i++){
+			int rowNum = positionRows[i];
+			int shiftNum = calculatedShifts[rowNum];
+			int size = sizeOfRow[rowNum];
+			Long maxOccupancy = (long) (Math.pow(2,size)-1);
+			Long occupancyNum = (allPieces>>>shiftNum)& maxOccupancy;
+			diagonalsCCW = diagonalsCCW|diagOccupancyMoves.get(ind.get(i)).get(occupancyNum);
+		}
+		diagonalsCCW = reverseRotateCCW45Deg(diagonalsCCW);
+		validMoves = (diagonalsCW|diagonalsCCW)& ~friendlyPieces;
+		return validMoves;
 	}
 	public Long generateKnightMoves (int teamColor){
 		//White Team Color = 1
@@ -352,7 +445,6 @@ public class Chessboard {
 		
 		for (int i=0;i<ind.size();i++){
 			int shiftNum = 8*((ind.get(i))/8);
-			int file = (ind.get(i))%8;
 			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
 			horizontals = horizontals|fileOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
@@ -361,7 +453,6 @@ public class Chessboard {
 		ind = bitPositions(rotatedRooks);
 		for (int i=0;i<ind.size();i++){
 			int shiftNum = 8*((ind.get(i))/8);
-			int file = (ind.get(i))%8;
 			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
 			verticals = verticals|fileOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
@@ -444,15 +535,7 @@ public class Chessboard {
 	//Rotating bitboards
 	public Long rotateCW90Deg(Long bitboard){
 		//Rotates a given bitboard clockwise 90 degrees
-		/*
-		Long result = 0L;
-		for (int i=0;i<64;i++){
-			Long valAti = (bitboard>>>i)&0b1L;
-			int amountToShift = 8*(i%8)+(7-i/8);
-			result = result | (valAti<<amountToShift);
-		}
-		*/
-	
+
 		Long result = 0L;
 		for (int i=0;i<64;i++){
 			Long valAti = (bitboard>>>i)&0b1L;
@@ -482,12 +565,32 @@ public class Chessboard {
 		 
 		return result;
 	}
+	public void build45RotationMaps(){
+		for(int i=0;i<64;i++){
+			CW45Map.put(CW45Order[i],i);
+			CCW45Map.put(CCW45Order[i],i);
+			reverseCW45Map.put(i, CW45Order[i]);
+			reverseCCW45Map.put(i, CCW45Order[i]);
+			
+		}
+
+	}
 	public Long rotateCW45Deg(Long bitboard){
 		//Rotates a given bitboard clockwise 45 degrees
 		Long result = 0L;
 		for (int i=0;i<64;i++){
 			Long valAti = (bitboard>>>i)&0b1L;
-			int amountToShift = (i + 8*(i&7)) & 63;
+			Integer amountToShift = CW45Map.get(i);
+			result = result | (valAti<<amountToShift);
+		}
+		return result;
+	}
+	public Long reverseRotateCW45Deg(Long bitboard){
+		//Rotates a given bitboard clockwise 45 degrees
+		Long result = 0L;
+		for (int i=0;i<64;i++){
+			Long valAti = (bitboard>>>i)&0b1L;
+			Integer amountToShift = reverseCW45Map.get(i);
 			result = result | (valAti<<amountToShift);
 		}
 		return result;
@@ -498,7 +601,17 @@ public class Chessboard {
 		Long result = 0L;
 		for (int i=0;i<64;i++){
 			Long valAti = (bitboard>>>i)&0b1L;
-			int amountToShift = (i + 8*((i&7)^7)) & 63;
+			Integer amountToShift =  CCW45Map.get(i);
+			result = result | (valAti<<amountToShift);
+		}
+		return result;
+	}
+	public Long reverseRotateCCW45Deg(Long bitboard){
+		//Rotates a given bitboard clockwise 45 degrees
+		Long result = 0L;
+		for (int i=0;i<64;i++){
+			Long valAti = (bitboard>>>i)&0b1L;
+			Integer amountToShift = reverseCCW45Map.get(i);
 			result = result | (valAti<<amountToShift);
 		}
 		return result;
