@@ -82,14 +82,14 @@ public class Chessboard {
 		for (int i=0;i<64;i++){
 			Long s = 0b1L<<i;
 			Long moves;
-			Long a = s>>>15;
-			Long b = s>>>17;
-			Long c = s>>>6;
-			Long d = s>>>10;
-			Long e = s<<10;
-			Long f = s<<6;
-			Long g = s<<17;
-			Long h = s<<15;
+			Long a = s<<15;
+			Long b = s<<17;
+			Long c = s<<6;
+			Long d = s<<10;
+			Long e = s>>>10;
+			Long f = s>>>6;
+			Long g = s>>>17;
+			Long h = s>>>15;
 			//In the leftmost column
 			if ((s & ~leftMostColumn)==0){
 				moves = b|d|f|h;
@@ -121,14 +121,14 @@ public class Chessboard {
 		for (int i=0;i<64;i++){
 			Long s = 0b1L<<i;
 			Long moves;
-			Long a = s>>>7;
-			Long b = s>>>8;
-			Long c = s>>>9;
-			Long d = s<<1;
-			Long e = s>>>1;
-			Long f = s<<9;
-			Long g = s<<8;
-			Long h = s<<7;
+			Long a = s<<7;
+			Long b = s<<8;
+			Long c = s<<9;
+			Long d = s>>>1;
+			Long e = s<<1;
+			Long f = s>>>9;
+			Long g = s>>>8;
+			Long h = s>>>7;
 			//In the leftmost column
 			if ((s & ~leftMostColumn)==0){
 				moves = b|c|e|g|h;
