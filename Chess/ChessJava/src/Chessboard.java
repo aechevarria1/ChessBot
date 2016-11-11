@@ -20,8 +20,8 @@ public class Chessboard {
 	private long[] boardInformation;
 	HashMap<Integer,Long> kingMoveMap = new HashMap<Integer,Long>();
 	HashMap<Integer,Long> knightMoveMap = new HashMap<Integer,Long>();
-	HashMap<Integer,HashMap<Long,Long>> fileOccupancyMoves = new HashMap<Integer,HashMap<Long,Long>>();
-	HashMap<Integer,HashMap<Long,Long>> diagOccupancyMoves = new HashMap<Integer,HashMap<Long,Long>>();
+	HashMap<Integer,HashMap<Long,Long>> fileOccupancyMoves = new HashMap<Integer,HashMap<Long,Long>>(); // maps square number to a hashmap that maps occupancy to allowed moves
+	HashMap<Integer,HashMap<Long,Long>> diagOccupancyMoves = new HashMap<Integer,HashMap<Long,Long>>(); // maps square number to a hashmap that maps occupancy to allowed moves
 	//Board Instantiation
 	public Chessboard(){
 		loadKingMoves();
@@ -146,36 +146,40 @@ public class Chessboard {
 	}
 	public void loadSlidingHorizOccupancyHashMap(){
 		//Pre-loads the available moves for horizontally sliding pieces. Columns must be converted to rows before use for vertical movement.
-		for (int i=0;i<8;i++){
-			fileOccupancyMoves.put(i, new HashMap<Long,Long>());
-		}
-		for (Long i=0L;i<256L;i++){
-			Long occupancy = i;
-			List<Integer> positions = bitPositions(occupancy);
-			for (int j=0;j<positions.size();j++){
-				int pos = positions.get(j);
-				Long s = 0b1L<<pos;
-				Long moves = 0b0L;
 
-				// Get moves to the right
-				int k=1;
-				Long newMove = 0b1L;
-				while (newMove!=0){
-					newMove = ((s<<k)& 0b11111111L); //only keep moves on this row
-					moves = moves | newMove;
-					newMove = newMove & ~occupancy; //stop when we hit another piece
-					k = k+1;
+		for (int i=0;i<64;i++){
+			fileOccupancyMoves.put(i, new HashMap<Long,Long>());
+			int rowNum = i/8;
+			int shift = 8*rowNum;
+			Long maxOccupancy = 255L;
+			Long currentPosition = 0b1L<<(i-shift); 
+			for (Long j=0L;j<=maxOccupancy;j++){
+				Long occupancy = j | currentPosition;
+				if (!fileOccupancyMoves.get(i).containsKey(occupancy)){
+					Long moves = 0b0L;
+
+					// Get moves to the right
+					int k=1;
+					Long newMove = 0b1L;
+					while (newMove!=0){
+						newMove = ((currentPosition<<k)& maxOccupancy); //only keep moves on this row
+						moves = moves | newMove;
+						newMove = newMove & ~occupancy; //stop when we hit another piece
+						k = k+1;
+					}
+					// Get moves to the left
+					k=1;
+					newMove = 0b1L;
+					while (newMove!=0){
+						newMove = ((currentPosition>>>k)& maxOccupancy); //only keep moves on this row
+						moves = moves | newMove; //add this to the moves
+						newMove = newMove & ~occupancy; //stop when we hit another piece
+						k = k+1;
+					}
+					moves = moves<<shift;
+					fileOccupancyMoves.get(i).put(occupancy, moves);
 				}
-				// Get moves to the left
-				k=1;
-				newMove = 0b1L;
-				while (newMove!=0){
-					newMove = ((s>>>k)& 0b11111111L); //only keep moves on this row
-					moves = moves | newMove; //add this to the moves
-					newMove = newMove & ~occupancy; //stop when we hit another piece
-					k = k+1;
-				}
-				fileOccupancyMoves.get(pos).put(occupancy, moves);
+				
 			}
 		}
 		
@@ -193,7 +197,7 @@ public class Chessboard {
 			int size = sizeOfRow[rowNum];
 			Long maxOccupancy = (long) (Math.pow(2,size)-1);
 			Long currentPosition = 0b1L<<(i-shift); 
-			for (Long j=0L;j<maxOccupancy;j++){
+			for (Long j=0L;j<=maxOccupancy;j++){
 				Long occupancy = j | currentPosition;
 				if (!diagOccupancyMoves.get(i).containsKey(occupancy)){
 					Long moves = 0b0L;
@@ -216,7 +220,7 @@ public class Chessboard {
 						newMove = newMove & ~occupancy; //stop when we hit another piece
 						k = k+1;
 					}
-
+					moves = moves<<shift;
 					diagOccupancyMoves.get(i).put(occupancy, moves);
 				}
 				
@@ -276,7 +280,7 @@ public class Chessboard {
 			int shiftNum = 8*((ind.get(i))/8);
 			int file = (ind.get(i))%8;
 			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
-			horizontals = horizontals|fileOccupancyMoves.get(file).get(occupancyNum);
+			horizontals = horizontals|fileOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		
 		Long rotatedQueens = rotateCW90Deg(queens);
@@ -285,7 +289,7 @@ public class Chessboard {
 			int shiftNum = 8*((ind.get(i))/8);
 			int file = (ind.get(i))%8;
 			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
-			verticals = verticals|fileOccupancyMoves.get(file).get(occupancyNum);
+			verticals = verticals|fileOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		verticals = rotateCCW90Deg(verticals);
 		
@@ -350,7 +354,7 @@ public class Chessboard {
 			int shiftNum = 8*((ind.get(i))/8);
 			int file = (ind.get(i))%8;
 			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
-			horizontals = horizontals|fileOccupancyMoves.get(file).get(occupancyNum);
+			horizontals = horizontals|fileOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		
 		Long rotatedRooks = rotateCW90Deg(rooks);
@@ -359,7 +363,7 @@ public class Chessboard {
 			int shiftNum = 8*((ind.get(i))/8);
 			int file = (ind.get(i))%8;
 			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
-			verticals = verticals|fileOccupancyMoves.get(file).get(occupancyNum);
+			verticals = verticals|fileOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		verticals = rotateCCW90Deg(verticals);
 		validMoves = (horizontals|verticals)& ~friendlyPieces;
