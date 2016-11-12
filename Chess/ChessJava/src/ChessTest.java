@@ -334,4 +334,5 @@ public class ChessTest {
 		Long result = myBoard.generatePawnMoves(0);
 		assert(result.equals(expectedResult));
 	}
+
 }

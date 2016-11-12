@@ -352,9 +352,6 @@ public class Chessboard {
 
 		
 		validMoves = (horizontals|verticals|diagonalsCW|diagonalsCCW)& ~friendlyPieces;
-		System.out.println(Long.toBinaryString(queens));
-		System.out.println(Long.toBinaryString(allPieces));
-		System.out.println(Long.toBinaryString(validMoves));
 		return validMoves;
 	}
 	public Long generateBishopMoves (int teamColor){
@@ -685,4 +682,5 @@ public class Chessboard {
 		String[][] myBoard = this.makeFullBoard();
 		return gridToString(myBoard);
 	}
+	
 }
