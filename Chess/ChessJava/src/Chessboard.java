@@ -311,45 +311,50 @@ public class Chessboard {
 		
 		//Along the columns
 		Long rotatedQueens = rotateCW90Deg(queens);
+		Long rotatedAllPieces = rotateCW90Deg(allPieces);
 		ind = bitPositions(rotatedQueens);
 		for (int i=0;i<ind.size();i++){
 			int shiftNum = 8*((ind.get(i))/8);
-			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
+			Long occupancyNum = (rotatedAllPieces>>>shiftNum)& 0b11111111L;
 			verticals = verticals|fileOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		verticals = rotateCCW90Deg(verticals);
 		
 		//Along the A8-H1 diagonal
 		Long diagonalsCW = 0b0L;
-		Long bishopsCW = rotateCW45Deg(queens);
-		ind = bitPositions(bishopsCW);
+		Long queensCW = rotateCW45Deg(queens);
+		Long allPiecesCW = rotateCW45Deg(allPieces);
+		ind = bitPositions(queensCW);
 		for (int i=0;i<ind.size();i++){
-			int rowNum = positionRows[i];
+			int rowNum = positionRows[ind.get(i)];
 			int shiftNum = calculatedShifts[rowNum];
 			int size = sizeOfRow[rowNum];
 			Long maxOccupancy = (long) (Math.pow(2,size)-1);
-			Long occupancyNum = (allPieces>>>shiftNum)& maxOccupancy;
+			Long occupancyNum = (allPiecesCW>>>shiftNum)& maxOccupancy;
 			diagonalsCW = diagonalsCW|diagOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		diagonalsCW = reverseRotateCW45Deg(diagonalsCW);
 		
 		//Along the A1-H8 diagonal
 		Long diagonalsCCW = 0b0L;
-		Long bishopsCCW = rotateCCW45Deg(queens);
-		ind = bitPositions(bishopsCCW);
+		Long queensCCW = rotateCCW45Deg(queens);
+		Long allPiecesCCW = rotateCCW45Deg(allPieces);
+		ind = bitPositions(queensCCW);
 		for (int i=0;i<ind.size();i++){
-			int rowNum = positionRows[i];
+			int rowNum = positionRows[ind.get(i)];
 			int shiftNum = calculatedShifts[rowNum];
 			int size = sizeOfRow[rowNum];
 			Long maxOccupancy = (long) (Math.pow(2,size)-1);
-			Long occupancyNum = (allPieces>>>shiftNum)& maxOccupancy;
+			Long occupancyNum = (allPiecesCCW>>>shiftNum)& maxOccupancy;
 			diagonalsCCW = diagonalsCCW|diagOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		diagonalsCCW = reverseRotateCCW45Deg(diagonalsCCW);
 
 		
 		validMoves = (horizontals|verticals|diagonalsCW|diagonalsCCW)& ~friendlyPieces;
-		
+		System.out.println(Long.toBinaryString(queens));
+		System.out.println(Long.toBinaryString(allPieces));
+		System.out.println(Long.toBinaryString(validMoves));
 		return validMoves;
 	}
 	public Long generateBishopMoves (int teamColor){
@@ -370,15 +375,18 @@ public class Chessboard {
 		}
 		
 		//Along the A8-H1 diagonal
+
 		Long diagonalsCW = 0b0L;
 		Long bishopsCW = rotateCW45Deg(bishops);
+		Long allPiecesCW = rotateCW45Deg(allPieces);
 		List<Integer> ind = bitPositions(bishopsCW);
+		
 		for (int i=0;i<ind.size();i++){
-			int rowNum = positionRows[i];
+			int rowNum = positionRows[ind.get(i)];
 			int shiftNum = calculatedShifts[rowNum];
 			int size = sizeOfRow[rowNum];
 			Long maxOccupancy = (long) (Math.pow(2,size)-1);
-			Long occupancyNum = (allPieces>>>shiftNum)& maxOccupancy;
+			Long occupancyNum = (allPiecesCW>>>shiftNum)& maxOccupancy;
 			diagonalsCW = diagonalsCW|diagOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		diagonalsCW = reverseRotateCW45Deg(diagonalsCW);
@@ -386,13 +394,14 @@ public class Chessboard {
 		//Along the A1-H8 diagonal
 		Long diagonalsCCW = 0b0L;
 		Long bishopsCCW = rotateCCW45Deg(bishops);
+		Long allPiecesCCW = rotateCCW45Deg(allPieces);
 		ind = bitPositions(bishopsCCW);
 		for (int i=0;i<ind.size();i++){
-			int rowNum = positionRows[i];
+			int rowNum = positionRows[ind.get(i)];
 			int shiftNum = calculatedShifts[rowNum];
 			int size = sizeOfRow[rowNum];
 			Long maxOccupancy = (long) (Math.pow(2,size)-1);
-			Long occupancyNum = (allPieces>>>shiftNum)& maxOccupancy;
+			Long occupancyNum = (allPiecesCCW>>>shiftNum)& maxOccupancy;
 			diagonalsCCW = diagonalsCCW|diagOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
 		diagonalsCCW = reverseRotateCCW45Deg(diagonalsCCW);
@@ -425,7 +434,6 @@ public class Chessboard {
 	public Long generateRookMoves (int teamColor){
 		//White Team Color = 1
 		//Black Team Color = 0
-
 		Long rooks;
 		Long validMoves = 0b0L;
 		Long friendlyPieces;
@@ -450,13 +458,14 @@ public class Chessboard {
 		}
 		
 		Long rotatedRooks = rotateCW90Deg(rooks);
+		Long rotatedAllPieces = rotateCW90Deg(allPieces);
 		ind = bitPositions(rotatedRooks);
 		for (int i=0;i<ind.size();i++){
 			int shiftNum = 8*((ind.get(i))/8);
-			Long occupancyNum = (allPieces>>>shiftNum)& 0b11111111L;
+			Long occupancyNum = (rotatedAllPieces>>>shiftNum)& 0b11111111L;
 			verticals = verticals|fileOccupancyMoves.get(ind.get(i)).get(occupancyNum);
 		}
-		verticals = rotateCCW90Deg(verticals);
+		verticals = rotateCCW90Deg(verticals);	
 		validMoves = (horizontals|verticals)& ~friendlyPieces;
 		
 		return validMoves;

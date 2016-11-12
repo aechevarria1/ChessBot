@@ -273,4 +273,65 @@ public class ChessTest {
 		assert(result.equals(bitboard));
 		//fail("Not yet implemented");
 	}
+	
+	@Test
+	public void testKings() {
+		Long WK             = 0b0001000000000000000000010000100000000000000000001000000000010001L;
+		Long WP             = 0b0000000000000000000000000000000000001000000000000000001000000000L;
+		Long expectedResult = 0b0010100000111011000111100001011100010100110000000111100111101010L;
+		long[] givenBoardInformation = {WK,0b0L,0b0L,0b0L,0b0L,WP,0b0L,0b0L,0b0L,0b0L,0b0L,0b0L};
+		Chessboard myBoard = new Chessboard(givenBoardInformation);
+		Long result = myBoard.generateKingMoves(1);
+		assert(result.equals(expectedResult));
+	}
+	@Test
+	public void testRooks() {
+		Long WR             = 0b0000100000000000000000000000000000100000000000000000000000000001L;
+		Long WP             = 0b0000001000000010010000000000000000001000000010000000000000000000L;
+		Long expectedResult = 0b1111010100101001001010010010100111010001001000010010000111111110L;
+		long[] givenBoardInformation = {0b0L,0b0L,0b0L,0b0L,WR,WP,0b0L,0b0L,0b0L,0b0L,0b0L,0b0L};
+		Chessboard myBoard = new Chessboard(givenBoardInformation);
+		Long result = myBoard.generateRookMoves(1);
+		assert(result.equals(expectedResult));
+	}
+	@Test
+	public void testBishops() {
+		Long WB             = 0b0000100000000000000000000000000000100000000000000000000000000001L;
+		Long WP             = 0b0000001000000010010000000000000000001000000010000000000000000000L;
+		Long expectedResult = 0b0000000000010100101010100101000110000000010101001000101000000100L;
+		long[] givenBoardInformation = {0b0L,0b0L,WB,0b0L,0b0L,WP,0b0L,0b0L,0b0L,0b0L,0b0L,0b0L};
+		Chessboard myBoard = new Chessboard(givenBoardInformation);
+		Long result = myBoard.generateBishopMoves(1);
+		assert(result.equals(expectedResult));
+	}
+	@Test
+	public void testQueens() {
+		Long WQ             = 0b0000100000000000000000000000000000100000000000000000000000000001L;
+		Long WP             = 0b0000001000000010010000000000000000001000000010000000000000000000L;
+		Long expectedResult = 0b1111010100111101101010110111100111010001011101011010101111111110L;
+		long[] givenBoardInformation = {0b0L,WQ,0b0L,0b0L,0b0L,WP,0b0L,0b0L,0b0L,0b0L,0b0L,0b0L};
+		Chessboard myBoard = new Chessboard(givenBoardInformation);
+		Long result = myBoard.generateQueenMoves(1);
+		assert(result.equals(expectedResult));
+	}
+	@Test
+	public void testWhitePawns() {
+		Long WP             = 0b0000100000100100000000000010000000000000000000000000010000001000L;
+		Long BN             = 0b0010000000000000010001100000000000000100001010000000000000000000L;
+		Long expectedResult = 0b0000010000000000011000000000000000000000000011000000100000000000L;
+		long[] givenBoardInformation = {0b0L,0b0L,0b0L,0b0L,0b0L,WP,0b0L,0b0L,0b0L,BN,0b0L,0b0L};
+		Chessboard myBoard = new Chessboard(givenBoardInformation);
+		Long result = myBoard.generatePawnMoves(1);
+		assert(result.equals(expectedResult));
+	}
+	@Test
+	public void testBlackPawns() {
+		Long BP             = 0b0000100000100100000000000010000000000000000000000010010000001000L;
+		Long WN             = 0b0010000000000000010001100000000000000100001010000000000000000000L;
+		Long expectedResult = 0b0000000000001000011000100000000000100000000000000000000000100100L;
+		long[] givenBoardInformation = {0b0L,0b0L,0b0L,WN,0b0L,0b0L,0b0L,0b0L,0b0L,0b0L,0b0L,BP};
+		Chessboard myBoard = new Chessboard(givenBoardInformation);
+		Long result = myBoard.generatePawnMoves(0);
+		assert(result.equals(expectedResult));
+	}
 }
