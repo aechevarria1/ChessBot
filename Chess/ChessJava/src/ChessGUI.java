@@ -1,149 +1,114 @@
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import javax.swing.*;
-import javax.swing.border.*;
 import java.net.URL;
+
 import javax.imageio.ImageIO;
+import javax.swing.*;
 
 public class ChessGUI {
-
-    private final JPanel gui = new JPanel(new BorderLayout(3, 3));
-    private JButton[][] chessBoardSquares = new JButton[8][8];
+	//Make the GUI object that contains all other components
+	private final JPanel gui = new JPanel(new GridBagLayout());
+	// Make 8x8 grid for the game
+	private JButton[][] chessBoardSquares = new JButton[8][8];
+	
     private Image[][] chessPieceImages = new Image[2][6];
+    
+    // Make the panel for the chessboard
     private JPanel chessBoard;
-    private final JLabel message = new JLabel(
-            "Chess Champ is ready to play!");
     private static final String COLS = "ABCDEFGH";
+    private static final String ROWS = "12345678";
     public static final int QUEEN = 0, KING = 1,
             ROOK = 2, KNIGHT = 3, BISHOP = 4, PAWN = 5;
     public static final int[] STARTING_ROW = {
         ROOK, KNIGHT, BISHOP, KING, QUEEN, BISHOP, KNIGHT, ROOK
     };
     public static final int BLACK = 0, WHITE = 1;
-
+    
+    // Make the top and left labels for file and rank
+	// Undo and Redo Buttons
+	// New game button
+	// Clear board button
+	// Build Board button
+	// Add specific pieces anywhere to the board
+	// Clicking on the piece shows available moves
+	// History of Moves Panel in the bottom
+    
     ChessGUI() {
         initializeGui();
     }
-
-    public final void initializeGui() {
-        // create the images for the chess pieces
-        createImages();
-
-        // set up the main GUI
-        gui.setBorder(new EmptyBorder(5, 5, 5, 5));
-        JToolBar tools = new JToolBar();
-        tools.setFloatable(false);
-        gui.add(tools, BorderLayout.PAGE_START);
-        Action newGameAction = new AbstractAction("New") {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setupNewGame();
-            }
-        };
-        tools.add(newGameAction);
-        tools.add(new JButton("Save")); // TODO - add functionality!
-        tools.add(new JButton("Restore")); // TODO - add functionality!
-        tools.addSeparator();
-        tools.add(new JButton("Resign")); // TODO - add functionality!
-        tools.addSeparator();
-        tools.add(message);
-
-        gui.add(new JLabel("?"), BorderLayout.LINE_START);
-
-        chessBoard = new JPanel(new GridLayout(0, 9)) {
-
-            /**
-             * Override the preferred size to return the largest it can, in
-             * a square shape.  Must (must, must) be added to a GridBagLayout
-             * as the only component (it uses the parent as a guide to size)
-             * with no GridBagConstaint (so it is centered).
-             */
-            @Override
-            public final Dimension getPreferredSize() {
-                Dimension d = super.getPreferredSize();
-                Dimension prefSize = null;
-                Component c = getParent();
-                if (c == null) {
-                    prefSize = new Dimension(
-                            (int)d.getWidth(),(int)d.getHeight());
-                } else if (c!=null &&
-                        c.getWidth()>d.getWidth() &&
-                        c.getHeight()>d.getHeight()) {
-                    prefSize = c.getSize();
-                } else {
-                    prefSize = d;
-                }
-                int w = (int) prefSize.getWidth();
-                int h = (int) prefSize.getHeight();
-                // the smaller of the two sizes
-                int s = (w>h ? h : w);
-                return new Dimension(s,s);
-            }
-        };
-        chessBoard.setBorder(new CompoundBorder(
-                new EmptyBorder(8,8,8,8),
-                new LineBorder(Color.BLACK)
-                ));
-        // Set the BG to be ochre
-        Color ochre = new Color(204,119,34);
-        chessBoard.setBackground(ochre);
-        JPanel boardConstrain = new JPanel(new GridBagLayout());
-        boardConstrain.setBackground(ochre);
-        boardConstrain.add(chessBoard);
-        gui.add(boardConstrain);
-
-        // create the chess board squares
-        Insets buttonMargin = new Insets(0, 0, 0, 0);
-        for (int ii = 0; ii < chessBoardSquares.length; ii++) {
-            for (int jj = 0; jj < chessBoardSquares[ii].length; jj++) {
-                JButton b = new JButton();
-                b.setMargin(buttonMargin);
-                // our chess pieces are 64x64 px in size, so we'll
-                // 'fill this in' using a transparent icon..
-                ImageIcon icon = new ImageIcon(
-                        new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB));
-                b.setIcon(icon);
-                if ((jj % 2 == 1 && ii % 2 == 1)
-                        //) {
-                        || (jj % 2 == 0 && ii % 2 == 0)) {
-                    b.setBackground(Color.WHITE);
-                } else {
-                    b.setBackground(Color.BLACK);
-                }
-                chessBoardSquares[jj][ii] = b;
-            }
-        }
-
-        /*
-         * fill the chess board
-         */
-        chessBoard.add(new JLabel(""));
-        // fill the top row
-        for (int ii = 0; ii < 8; ii++) {
-            chessBoard.add(
-                    new JLabel(COLS.substring(ii, ii + 1),
-                    SwingConstants.CENTER));
-        }
-        // fill the black non-pawn piece row
-        for (int ii = 0; ii < 8; ii++) {
-            for (int jj = 0; jj < 8; jj++) {
-                switch (jj) {
-                    case 0:
-                        chessBoard.add(new JLabel("" + (9-(ii + 1)),
-                                SwingConstants.CENTER));
-                    default:
-                        chessBoard.add(chessBoardSquares[jj][ii]);
-                }
-            }
-        }
+    
+    public final void initializeGui(){
+    	// Make images for chess pieces
+    	createImages();
+    	// Set up the tools
+    	GridBagConstraints toolConstraints = new GridBagConstraints();
+    	toolConstraints.gridx = 1;
+    	toolConstraints.gridy = 1;
+    	toolConstraints.gridheight = 2;
+    	toolConstraints.gridwidth = 10;
+    	JPanel tools = makeTools();
+    	
+    	// Chessboard
+    	makeChessBoard();
+    	GridBagConstraints chessBoardConstraints = new GridBagConstraints();
+    	chessBoardConstraints.gridx = 1; chessBoardConstraints.gridy = 4; chessBoardConstraints.gridheight = 8; chessBoardConstraints.gridwidth = 8;
+    	gui.add(chessBoard, chessBoardConstraints);
+    	gui.add(tools, toolConstraints);
+    }
+    
+    private final JPanel makeTools(){
+    	JPanel tools = new JPanel(new GridBagLayout());
+    	// Make Components
+    	JButton newButton = new JButton("New");
+    	JButton loadButton = new JButton("Load");
+    	JLabel whiteTimerLabel = new JLabel("White Timer");
+    	JLabel blackTimerLabel = new JLabel("Black Timer");
+    	JLabel whiteTimer = new JLabel("0:00");
+    	JLabel blackTimer = new JLabel("0:00");
+    	// Specify Constraints
+    	GridBagConstraints c1 = new GridBagConstraints();
+    	c1.gridx = 1; c1.gridy = 1; c1.gridheight = 2; c1.gridwidth = 2;
+    	GridBagConstraints c2 = new GridBagConstraints();
+    	c2.gridx = 3; c2.gridy = 1; c2.gridheight = 2; c2.gridwidth = 2;
+    	GridBagConstraints c3 = new GridBagConstraints();
+    	c3.gridx = 5; c3.gridy = 1; c3.gridheight = 1; c3.gridwidth = 3;
+    	GridBagConstraints c4 = new GridBagConstraints();
+    	c4.gridx = 8; c4.gridy = 1; c4.gridheight = 1; c4.gridwidth = 3;
+    	GridBagConstraints c5 = new GridBagConstraints();
+    	c5.gridx = 5; c5.gridy = 2; c5.gridheight = 1; c5.gridwidth = 3;
+    	GridBagConstraints c6 = new GridBagConstraints();
+    	c6.gridx = 8; c6.gridy = 2; c6.gridheight = 1; c6.gridwidth = 3;
+    	
+    	tools.add(newButton,c1);
+    	tools.add(loadButton,c2);
+    	tools.add(whiteTimerLabel,c3);
+    	tools.add(blackTimerLabel,c4);
+    	tools.add(whiteTimer,c5);
+    	tools.add(blackTimer,c6);
+    	return tools;
+    	
     }
 
+    private final void makeChessBoard(){
+    	chessBoard = new JPanel(new GridBagLayout());
+    	// Make Squares in chessboard
+    	for (int i=0;i<8;i++){
+    		for (int j=0;j<8;j++){
+    			String squarelabel = COLS.substring(i, i+1) + ROWS.substring(j, j+1);
+    			JButton newButton = new JButton(squarelabel);
+    			chessBoardSquares[j][i] =  newButton;
+    	    	GridBagConstraints c = new GridBagConstraints();
+    	    	c.gridx = i; c.gridy = j; c.gridheight = 1; c.gridwidth = 1;
+    	    	chessBoard.add(newButton,c);
+    		}
+    	}	
+    }
+   
     public final JComponent getGui() {
         return gui;
     }
-
+    
+    //Make chess piece images
     private final void createImages() {
         try {
             URL url = new URL("http://i.stack.imgur.com/memI0.png");
@@ -159,32 +124,7 @@ public class ChessGUI {
             System.exit(1);
         }
     }
-
-    /**
-     * Initializes the icons of the initial chess board piece places
-     */
-    private final void setupNewGame() {
-        message.setText("Make your move!");
-        // set up the black pieces
-        for (int ii = 0; ii < STARTING_ROW.length; ii++) {
-            chessBoardSquares[ii][0].setIcon(new ImageIcon(
-                    chessPieceImages[BLACK][STARTING_ROW[ii]]));
-        }
-        for (int ii = 0; ii < STARTING_ROW.length; ii++) {
-            chessBoardSquares[ii][1].setIcon(new ImageIcon(
-                    chessPieceImages[BLACK][PAWN]));
-        }
-        // set up the white pieces
-        for (int ii = 0; ii < STARTING_ROW.length; ii++) {
-            chessBoardSquares[ii][6].setIcon(new ImageIcon(
-                    chessPieceImages[WHITE][PAWN]));
-        }
-        for (int ii = 0; ii < STARTING_ROW.length; ii++) {
-            chessBoardSquares[ii][7].setIcon(new ImageIcon(
-                    chessPieceImages[WHITE][STARTING_ROW[ii]]));
-        }
-    }
-
+    
     public static void main(String[] args) {
         Runnable r = new Runnable() {
 
@@ -192,7 +132,7 @@ public class ChessGUI {
             public void run() {
                 ChessGUI cg = new ChessGUI();
 
-                JFrame f = new JFrame("ChessChamp");
+                JFrame f = new JFrame("ChessGUI");
                 f.add(cg.getGui());
                 // Ensures JVM closes after frame(s) closed and
                 // all non-daemon threads are finished
