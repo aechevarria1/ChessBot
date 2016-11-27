@@ -334,5 +334,15 @@ public class ChessTest {
 		Long result = myBoard.generatePawnMoves(0);
 		assert(result.equals(expectedResult));
 	}
+	@Test
+	public void testRooks2() {
+		Long WR             = 0b0000100000000000000000000000000000100000000000000000000000000001L;
+		Long WP             = 0b0000001000000010010000000000000000001000000010000000000000000000L;
+		Long expectedResult = 0b1111010100101001001010010010100111010001001000010010000111111110L;
+		long[] givenBoardInformation = {0b0L,0b0L,0b0L,0b0L,WR,WP,0b0L,0b0L,0b0L,0b0L,0b0L,0b0L};
+		Chessboard myBoard = new Chessboard(givenBoardInformation);
+		Long result = myBoard.generateRookMoves2(1);
+		assert(result.equals(expectedResult));
+	}
 
 }

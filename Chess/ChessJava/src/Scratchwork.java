@@ -30,7 +30,7 @@ public class Scratchwork {
 		String val = new String();
 		val = "\ta\tb\tc\td\te\tf\tg\th\n";
 		   for(int i = 0; i < 8; i++)
-		   { val = val + Integer.toString(i+1);
+		   { val = val + Integer.toString(8-i);
 		      for(int j = 0; j < 8; j++)
 		      {
 		    	  val = val + "\t" + board[i][j];
@@ -39,6 +39,23 @@ public class Scratchwork {
 		   }
 		   return val;
 		}
+	public static void drawBitboard(long bitBoard){
+		String[][] chessBoard = new String [8][8];
+		for (int i=0;i<64;i++){
+			chessBoard[7-(i/8)][i%8]="";
+		}
+		for (int i=0;i<64;i++){
+			if(((bitBoard>>>i)&1)==1){
+				chessBoard[7-(i/8)][i%8]="P";
+			}
+			else{
+				chessBoard[7-(i/8)][i%8]=" ";
+			}
+		}
+		for(int i=0;i<8;i++){
+		   System.out.println(Arrays.toString(chessBoard[i]));
+		}
+	}
 	public static void main(String [] args){
 		//int x = 1;
 		//System.out.println(x);
@@ -86,6 +103,7 @@ public class Scratchwork {
 		/*
 		Chessboard myBoard = new Chessboard();
 		System.out.println(myBoard);
+		
 		Long whiteMoves = myBoard.generatePawnMoves (1);
 		Long blackMoves = myBoard.generatePawnMoves (0);
 		System.out.println(Long.toBinaryString(whiteMoves));
@@ -155,7 +173,45 @@ public class Scratchwork {
 		System.out.println(col3);
 		System.out.println(col2);
 		System.out.println(col1);
+		System.out.println("pause");
+		drawBitboard(col1);
+		System.out.println("pause");
+		drawBitboard(col8);
+		System.out.println("pause");
+		drawBitboard(row1);
+		System.out.println("pause");
 		*/
+		/*
+		long center   = 0b0000000000000000000000000001100000011000000000000000000000000000L;
+		long extendedcenter   = 0b0000000000000000001111000011110000111100001111000000000000000000L;
+		long kingside   = 0b1111000000000000000000000000000000000000000000000000000011110000L;
+		long queenside  = 0b0000111100000000000000000000000000000000000000000000000000001111L;
+		System.out.println(center);
+		System.out.println(extendedcenter);
+		System.out.println(kingside);
+		System.out.println(queenside);
+		System.out.println("pause");
+		drawBitboard(center);
+		System.out.println("pause");
+		drawBitboard(extendedcenter);
+		System.out.println("pause");
+		drawBitboard(kingside);
+		System.out.println("pause");
+		drawBitboard(queenside);
+		*/
+		/*
+		Chessboard myBoard = new Chessboard(1);
+		System.out.println(myBoard);
+		myBoard = new Chessboard(0);
+		System.out.println(myBoard);
+		*/
+		Chessboard myBoard = new Chessboard(-1);
+		System.out.println(myBoard);
+		String moves = Moves.possibleMovesW(myBoard.history, myBoard.WK, myBoard.WQ, myBoard.WB, myBoard.WN, myBoard.WR, myBoard.WP, myBoard.BK, myBoard.BQ, myBoard.BB, myBoard.BN, myBoard.BR, myBoard.BP,myBoard.CWK,myBoard.CWQ,myBoard.CBK,myBoard.CBQ);
+		System.out.println(moves);
+		moves = Moves.possibleMovesB(myBoard.history, myBoard.WK, myBoard.WQ, myBoard.WB, myBoard.WN, myBoard.WR, myBoard.WP, myBoard.BK, myBoard.BQ, myBoard.BB, myBoard.BN, myBoard.BR, myBoard.BP,myBoard.CWK,myBoard.CWQ,myBoard.CBK,myBoard.CBQ);
+		System.out.println(moves);
+
 	}
 	
 }

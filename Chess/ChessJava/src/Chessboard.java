@@ -5,22 +5,26 @@ import java.util.List;
 
 public class Chessboard {
 	
-	private long WK;
-	private long WQ;
-	private long WB;
-	private long WN;
-	private long WR;
-	private long WP;
-	private long BK;
-	private long BQ;
-	private long BB;
-	private long BN;
-	private long BR;
-	private long BP;
+	long WK;
+	long WQ;
+	long WB;
+	long WN;
+	long WR;
+	long WP;
+	long BK;
+	long BQ;
+	long BB;
+	long BN;
+	long BR;
+	long BP;
+	String history = "";
+	boolean CWK=true,CWQ=true,CBK=true,CBQ=true;//true=castle is possible
+	
 	private long[] boardInformation;
 	HashMap<Integer,Long> kingMoveMap = new HashMap<Integer,Long>();
 	HashMap<Integer,Long> knightMoveMap = new HashMap<Integer,Long>();
 	HashMap<Integer,HashMap<Long,Long>> fileOccupancyMoves = new HashMap<Integer,HashMap<Long,Long>>(); // maps square number to a hashmap that maps occupancy to allowed moves
+	private long[][] gameHistory = new long[][]{};
 	
 	//For calculating diagonal sliding moves
 	HashMap<Integer,HashMap<Long,Long>> diagOccupancyMoves = new HashMap<Integer,HashMap<Long,Long>>(); // maps square number to a hashmap that maps occupancy to allowed moves
@@ -260,8 +264,6 @@ public class Chessboard {
 		//White Team Color = 1
 		//Black Team Color = 0
 		
-		//TODO castling
-		
 		Long king;
 		Long validMoves = 0b0L;
 		Long friendlyPieces;
@@ -278,6 +280,9 @@ public class Chessboard {
 			validMoves = validMoves| kingMoveMap.get(ind.get(i));
 		}
 		validMoves = validMoves & ~friendlyPieces;
+		
+		//TODO
+		//castling
 		return validMoves;
 	}
 	
@@ -428,6 +433,40 @@ public class Chessboard {
 		validMoves = validMoves & ~friendlyPieces;
 		return validMoves;
 	}
+	public Long generateRookMoves2(int teamColor){
+    	//s = positions of sliding pieces
+    	//m = mask
+		long s;
+		long friendlyPieces;
+		if (teamColor==1){
+			s = WR;
+			friendlyPieces = whitePieces();
+		}
+		else{
+			s = BR;
+			friendlyPieces = blackPieces();
+		}
+		
+		
+		long RANK_1 = 255L;
+		long FILE_A = 72340172838076673L;
+		long m1 = 0b0L;
+		long m2 = 0b0L;
+		List<Integer> ind = bitPositions(s);
+		long validMoves = 0b0L;
+		for (int i:ind){
+			s = 0b1L<<i;
+			m1 = (FILE_A<<((i%8)));
+			m2 = (RANK_1<<((i/8)*8));
+			long o = allPieces(); //occupancy
+			long tempvalidMoves1 = (((o&m1)-2*s)^Long.reverse(Long.reverse(o&m1)-2*Long.reverse(s)))&m1;
+			long tempvalidMoves2 = (((o)-2*s)^Long.reverse(Long.reverse(o)-2*Long.reverse(s)))&m2;
+			long tempvalidMoves = (tempvalidMoves1|tempvalidMoves2) & ~friendlyPieces;
+			validMoves = validMoves | tempvalidMoves;
+		}
+		return validMoves;
+	
+	}
 	public Long generateRookMoves (int teamColor){
 		//White Team Color = 1
 		//Black Team Color = 0
@@ -494,7 +533,21 @@ public class Chessboard {
 			//validMoves = validMoves | doubleMove;
 			
 			//En Passant
-			//TODO
+			if (gameHistory.length>0){
+				Long oldBP = gameHistory[gameHistory.length - 1][11];
+				Long currRow5  =  BP & (0b1111111100000000000000000000000000000000L);
+				Long currRow6  =  BP & (0b111111110000000000000000000000000000000000000000L);
+				Long currRow7  =  BP & (0b11111111000000000000000000000000000000000000000000000000L);
+				Long oldRow5  =  oldBP & (0b1111111100000000000000000000000000000000L);
+				Long oldRow6  =  oldBP & (0b111111110000000000000000000000000000000000000000L);
+				Long oldRow7  =  oldBP & (0b11111111000000000000000000000000000000000000000000000000L);
+				Long a = ~(oldRow5 <<16) & ~(oldRow6<<8) & oldRow7;
+				Long b = ~(currRow7>>>16) & ~(currRow6>>>8) & currRow5;
+				Long possibleEnPassant = ((a>>>16)&b)<<8;
+				Long captureEPLeft  = (WP& ~leftMostColumn) <<9 & possibleEnPassant;
+				Long captureEPRight = (WP& ~rightMostColumn)<<7 & possibleEnPassant;
+				validMoves = validMoves|captureEPLeft|captureEPRight;
+			}
 		}
 		else if (teamColor==0){
 			//Standard Pawn Movement
@@ -515,7 +568,21 @@ public class Chessboard {
 			//validMoves = validMoves | doubleMove;
 			
 			//En Passant
-			//TODO
+			if (gameHistory.length>0){
+				Long oldWP = gameHistory[gameHistory.length - 1][5];
+				Long currRow2  =  WP & (0b1111111100000000L);
+				Long currRow3  =  WP & (0b111111110000000000000000L);
+				Long currRow4  =  WP & (0b11111111000000000000000000000000L);
+				Long oldRow2  =  oldWP & (0b1111111100000000L);
+				Long oldRow3  =  oldWP & (0b111111110000000000000000L);
+				Long oldRow4  =  oldWP & (0b11111111000000000000000000000000L);
+				Long a = ~(oldRow4>>>16) & ~(oldRow3>>>8) & oldRow2;
+				Long b = ~(currRow2<<16) & ~(currRow3<<8) & currRow4;
+				Long possibleEnPassant = ((a<<16)&b)>>>8;
+				Long captureEPLeft  = (BP& ~leftMostColumn) >>>7 & possibleEnPassant;
+				Long captureEPRight = (BP& ~rightMostColumn)>>>9 & possibleEnPassant;
+				validMoves = validMoves|captureEPLeft|captureEPRight;
+			}
 		}
 		return validMoves;
 	}
@@ -643,7 +710,7 @@ public class Chessboard {
 		String val = new String();
 		val = "\ta\tb\tc\td\te\tf\tg\th\n";
 		   for(int i = 0; i < 8; i++){
-			   val = val + Integer.toString(i+1);
+			   val = val + Integer.toString(8-i);
 		      for(int j = 0; j < 8; j++){
 		    	  val = val + "\t" + board[i][j];
 		      }
@@ -683,4 +750,155 @@ public class Chessboard {
 		return gridToString(myBoard);
 	}
 	
+	public Chessboard(int standard){
+		if (standard==1){
+			initiateStandardChess();
+		}
+		else if (standard==0){
+			initiateChess960();
+		}
+		else{
+			initiateDebugChess();
+			history = "6163";
+		}
+		build45RotationMaps();
+		loadKingMoves();
+		loadKnightMoves();
+		loadSlidingHorizOccupancyHashMap();
+		loadSlidingDiagOccupancyHashMapDiag();
+		boardInformation = new long[] {this.WK,this.WQ,this.WB,this.WN,this.WR,this.WP,this.BK,this.BQ,this.BB,this.BN,this.BR,this.BP};
+	}
+    public void initiateDebugChess() {
+        WP=0L;WN=0L;WB=0L;WR=0L;WQ=0L;WK=0L;BP=0L;BN=0L;BB=0L;BR=0L;BQ=0L;BK=0L;
+        String chessBoard[][]={
+                {" "," "," "," "," "," "," "," "},
+                {"p","p","p"," "," "," "," "," "},
+                {"P","P"," "," "," "," "," "," "},
+                {" "," "," "," "," "," "," "," "},
+                {" "," "," "," "," "," "," "," "},
+                {"p","p"," "," "," "," "," "," "},
+                {"P","P","P"," "," "," "," "," "},
+                {" "," "," "," "," "," "," "," "}};
+        arrayToBitboards(chessBoard);
+    }
+    public void initiateStandardChess() {
+        WP=0L;WN=0L;WB=0L;WR=0L;WQ=0L;WK=0L;BP=0L;BN=0L;BB=0L;BR=0L;BQ=0L;BK=0L;
+        String chessBoard[][]={
+                {"r","n","b","q","k","b","n","r"},
+                {"p","p","p","p","p","p","p","p"},
+                {" "," "," "," "," "," "," "," "},
+                {" "," "," "," "," "," "," "," "},
+                {" "," "," "," "," "," "," "," "},
+                {" "," "," "," "," "," "," "," "},
+                {"P","P","P","P","P","P","P","P"},
+                {"R","N","B","Q","K","B","N","R"}};
+        arrayToBitboards(chessBoard);
+    }
+    public void initiateChess960() {
+    	WP=0L;WN=0L;WB=0L;WR=0L;WQ=0L;WK=0L;BP=0L;BN=0L;BB=0L;BR=0L;BQ=0L;BK=0L;
+        String chessBoard[][]={
+            {" "," "," "," "," "," "," "," "},
+            {"p","p","p","p","p","p","p","p"},
+            {" "," "," "," "," "," "," "," "},
+            {" "," "," "," "," "," "," "," "},
+            {" "," "," "," "," "," "," "," "},
+            {" "," "," "," "," "," "," "," "},
+            {"P","P","P","P","P","P","P","P"},
+            {" "," "," "," "," "," "," "," "}};
+        //step 1:
+        int random1=(int)(Math.random()*8);
+        chessBoard[0][random1]="b";
+        chessBoard[7][random1]="B";
+        //step 2:
+        int random2=(int)(Math.random()*8);
+        while (random2%2==random1%2) {
+            random2=(int)(Math.random()*8);
+        }
+        chessBoard[0][random2]="b";
+        chessBoard[7][random2]="B";
+        //step 3:
+        int random3=(int)(Math.random()*8);
+        while (random3==random1 || random3==random2) {
+            random3=(int)(Math.random()*8);
+        }
+        chessBoard[0][random3]="q";
+        chessBoard[7][random3]="Q";
+        //step 4:
+        int random4a=(int)(Math.random()*5);
+        int counter=0;
+        int loop=0;
+        while (counter-1<random4a) {
+            if (" ".equals(chessBoard[0][loop])) {counter++;}
+            loop++;
+        }
+        chessBoard[0][loop-1]="n";
+        chessBoard[7][loop-1]="N";
+        int random4b=(int)(Math.random()*4);
+        counter=0;
+        loop=0;
+        while (counter-1<random4b) {
+            if (" ".equals(chessBoard[0][loop])) {counter++;}
+            loop++;
+        }
+        chessBoard[0][loop-1]="n";
+        chessBoard[7][loop-1]="N";
+        //step 5:
+        counter=0;
+        while (!" ".equals(chessBoard[0][counter])) {
+            counter++;
+        }
+        chessBoard[0][counter]="r";
+        chessBoard[7][counter]="R";
+        while (!" ".equals(chessBoard[0][counter])) {
+            counter++;
+        }
+        chessBoard[0][counter]="k";
+        chessBoard[7][counter]="K";
+        while (!" ".equals(chessBoard[0][counter])) {
+            counter++;
+        }
+        chessBoard[0][counter]="r";
+        chessBoard[7][counter]="R";
+        arrayToBitboards(chessBoard);
+    }
+    public void arrayToBitboards(String[][] chessBoard) {
+        String Binary;
+        for (int i=0;i<64;i++) {
+            Binary="0000000000000000000000000000000000000000000000000000000000000000";
+            Binary=Binary.substring(i+1)+"1"+Binary.substring(0, i);
+            switch (chessBoard[7-i/8][i%8]) {
+                case "P": WP+=convertStringToBitboard(Binary);
+                    break;
+                case "N": WN+=convertStringToBitboard(Binary);
+                    break;
+                case "B": WB+=convertStringToBitboard(Binary);
+                    break;
+                case "R": WR+=convertStringToBitboard(Binary);
+                    break;
+                case "Q": WQ+=convertStringToBitboard(Binary);
+                    break;
+                case "K": WK+=convertStringToBitboard(Binary);
+                    break;
+                case "p": BP+=convertStringToBitboard(Binary);
+                    break;
+                case "n": BN+=convertStringToBitboard(Binary);
+                    break;
+                case "b": BB+=convertStringToBitboard(Binary);
+                    break;
+                case "r": BR+=convertStringToBitboard(Binary);
+                    break;
+                case "q": BQ+=convertStringToBitboard(Binary);
+                    break;
+                case "k": BK+=convertStringToBitboard(Binary);
+                    break;
+            }
+        }
+    }
+    public static long convertStringToBitboard(String Binary) {
+        if (Binary.charAt(0)=='0') {//not going to be a negative number
+            return Long.parseLong(Binary, 2);
+        } else {
+            return Long.parseLong("1"+Binary.substring(2), 2)*2;
+        }
+    }
 }
