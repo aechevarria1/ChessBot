@@ -17,11 +17,13 @@ public class Chessboard {
 	long BN;
 	long BR;
 	long BP;
+	
+	long EP=0b0L;
 	String history = "";
 	boolean CWK=true,CWQ=true,CBK=true,CBQ=true;//true=castle is possible
 	
 	private long[] boardInformation;
-	HashMap<Integer,Long> kingMoveMap = new HashMap<Integer,Long>();
+	/*HashMap<Integer,Long> kingMoveMap = new HashMap<Integer,Long>();
 	HashMap<Integer,Long> knightMoveMap = new HashMap<Integer,Long>();
 	HashMap<Integer,HashMap<Long,Long>> fileOccupancyMoves = new HashMap<Integer,HashMap<Long,Long>>(); // maps square number to a hashmap that maps occupancy to allowed moves
 	private long[][] gameHistory = new long[][]{};
@@ -51,14 +53,15 @@ public class Chessboard {
 	int [] positionRows = {0,1,1,2,2,2,3,3,3,3,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,8,8,9,9,9,9,9,9,10,10,10,10,10,11,11,11,11,12,12,12,13,13,14};
 	int [] calculatedShifts = {0,1,3,6,10,15,21,28,36,43,49,54,58,61,63};
 	int [] sizeOfRow = {1,2,3,4,5,6,7,8,7,6,5,4,3,2,1};
-
+	 */
+	
 	//Board Instantiation
 	public Chessboard(){
-		build45RotationMaps();
-		loadKingMoves();
-		loadKnightMoves();
-		loadSlidingHorizOccupancyHashMap();
-		loadSlidingDiagOccupancyHashMapDiag();
+		//build45RotationMaps();
+		//loadKingMoves();
+		//loadKnightMoves();
+		//loadSlidingHorizOccupancyHashMap();
+		//loadSlidingDiagOccupancyHashMapDiag();
 		
 		//To make an instance of a new Chessboard
 		WK = 0b0000000000010000L;
@@ -82,11 +85,11 @@ public class Chessboard {
 	}
 	public Chessboard(long[] givenBoardInformation){
 		//To load a chess game from a collection of information about pieces.
-		build45RotationMaps();
-		loadKingMoves();
-		loadKnightMoves();
-		loadSlidingHorizOccupancyHashMap();
-		loadSlidingDiagOccupancyHashMapDiag();
+		//build45RotationMaps();
+		//loadKingMoves();
+		//loadKnightMoves();
+		//loadSlidingHorizOccupancyHashMap();
+		//loadSlidingDiagOccupancyHashMapDiag();
 		
 		WK = givenBoardInformation[0];
 		WQ = givenBoardInformation[1];
@@ -102,7 +105,7 @@ public class Chessboard {
 		BP = givenBoardInformation[11];
 		boardInformation = givenBoardInformation;
 	}
-
+	/*
 	//Preloading All Possible King and Knight and Sliding Moves
 	public void loadKnightMoves(){
 		//Pre-loads the possible moves a knight can make.
@@ -586,7 +589,7 @@ public class Chessboard {
 		}
 		return validMoves;
 	}
-	
+	*/
 	public void updateBoardInformation(){
 		this.boardInformation = new long[] {this.WK,this.WQ,this.WB,this.WN,this.WR,this.WP,this.BK,this.BQ,this.BB,this.BN,this.BR,this.BP};
 	}
@@ -604,7 +607,7 @@ public class Chessboard {
 		Long allPieces = this.WK|this.WQ|this.WB|this.WN|this.WR|this.WP|this.BK|this.BQ|this.BB|this.BN|this.BR|this.BP;
 		return allPieces;
 	}
-	
+	/*
 	//Rotating bitboards
 	public Long rotateCW90Deg(Long bitboard){
 		//Rotates a given bitboard clockwise 90 degrees
@@ -620,15 +623,7 @@ public class Chessboard {
 	}
 	public Long rotateCCW90Deg(Long bitboard){
 		//Rotates a given bitboard counterclockwise 90 degrees
-		/*
-		Long result = 0L;
-		for (int i=0;i<64;i++){
-			Long valAti = (bitboard>>>i)&0b1L;
-			int amountToShift = 8*(7-i%8)+(i/8);
-			result = result | (valAti<<amountToShift);
-		}
-		*/
-			
+		
 		Long result = 0L;
 		for (int i=0;i<64;i++){
 			Long valAti = (bitboard>>>i)&0b1L;
@@ -689,7 +684,7 @@ public class Chessboard {
 		}
 		return result;
 	}
-	
+	*/
 	
 	//Visualizing Boards
 	private static List<Integer> bitPositions(long number) {
@@ -761,11 +756,11 @@ public class Chessboard {
 			initiateDebugChess();
 			history = "6163";
 		}
-		build45RotationMaps();
-		loadKingMoves();
-		loadKnightMoves();
-		loadSlidingHorizOccupancyHashMap();
-		loadSlidingDiagOccupancyHashMapDiag();
+		//build45RotationMaps();
+		//loadKingMoves();
+		//loadKnightMoves();
+		//loadSlidingHorizOccupancyHashMap();
+		//loadSlidingDiagOccupancyHashMapDiag();
 		boardInformation = new long[] {this.WK,this.WQ,this.WB,this.WN,this.WR,this.WP,this.BK,this.BQ,this.BB,this.BN,this.BR,this.BP};
 	}
     public void initiateDebugChess() {

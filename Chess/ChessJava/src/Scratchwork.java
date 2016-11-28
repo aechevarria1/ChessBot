@@ -205,13 +205,36 @@ public class Scratchwork {
 		myBoard = new Chessboard(0);
 		System.out.println(myBoard);
 		*/
+		
 		Chessboard myBoard = new Chessboard(-1);
 		System.out.println(myBoard);
-		String moves = Moves.possibleMovesW(myBoard.history, myBoard.WK, myBoard.WQ, myBoard.WB, myBoard.WN, myBoard.WR, myBoard.WP, myBoard.BK, myBoard.BQ, myBoard.BB, myBoard.BN, myBoard.BR, myBoard.BP,myBoard.CWK,myBoard.CWQ,myBoard.CBK,myBoard.CBQ);
+		String moves = Moves.possibleMovesW(myBoard.WK, myBoard.WQ, myBoard.WB, myBoard.WN, myBoard.WR, myBoard.WP, myBoard.BK, myBoard.BQ, myBoard.BB, myBoard.BN, myBoard.BR, myBoard.BP,myBoard.EP,myBoard.CWK,myBoard.CWQ,myBoard.CBK,myBoard.CBQ);
 		System.out.println(moves);
-		moves = Moves.possibleMovesB(myBoard.history, myBoard.WK, myBoard.WQ, myBoard.WB, myBoard.WN, myBoard.WR, myBoard.WP, myBoard.BK, myBoard.BQ, myBoard.BB, myBoard.BN, myBoard.BR, myBoard.BP,myBoard.CWK,myBoard.CWQ,myBoard.CBK,myBoard.CBQ);
+		moves = Moves.possibleMovesB(myBoard.WK, myBoard.WQ, myBoard.WB, myBoard.WN, myBoard.WR, myBoard.WP, myBoard.BK, myBoard.BQ, myBoard.BB, myBoard.BN, myBoard.BR, myBoard.BP,myBoard.EP,myBoard.CWK,myBoard.CWQ,myBoard.CBK,myBoard.CBQ);
 		System.out.println(moves);
-
+		/*
+		Long WR             = 0b0000100000000000000000000000000000100000000000000000000000000001L;
+		Long WP             = 0b0000001000000010010000000000000000001000000010000000000000000000L;
+		long[] givenBoardInformation = {0b0L,0b0L,0b0L,0b0L,WR,WP,0b0L,0b0L,0b0L,0b0L,0b0L,0b0L};
+		Chessboard myBoard = new Chessboard(givenBoardInformation);
+		Long result;
+		
+        int loopLength=1000;
+        long startTime=System.currentTimeMillis();
+        for (int i=0;i<loopLength;i++){
+        	result = myBoard.generateRookMoves(1);
+        }
+        long endTime=System.currentTimeMillis();
+        System.out.println("That took "+(endTime-startTime)+" milliseconds for the first method");
+        startTime=System.currentTimeMillis();
+        for (int i=0;i<loopLength;i++){
+        	result = myBoard.generateRookMoves2(1);
+        }
+        endTime=System.currentTimeMillis();
+        System.out.println("That took "+(endTime-startTime)+" milliseconds for the second method");
+		*/
+		
+		
 	}
 	
 }

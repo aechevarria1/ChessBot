@@ -78,13 +78,13 @@ public class Moves {
         return (possibilitiesA8H1&A8H1DiagMasks15[(s / 8) + (s % 8)]) | (possibilitiesA1H8&A1H8DiagMasks15[(s / 8) + 7 - (s % 8)]);
 	}
 	
-	public static String possibleMovesW(String history,long WK,long WQ,long WB,long WN,long WR,long WP,long BK,long BQ,long BB,long BN,long BR,long BP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ){
+	public static String possibleMovesW(long WK,long WQ,long WB,long WN,long WR,long WP,long BK,long BQ,long BB,long BN,long BR,long BP,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ){
 		NOT_MY_PIECES = ~(WP|WN|WB|WR|WQ|WK|BK); //Added BK to avoid illegal capture
 		MY_PIECES = WP|WN|WB|WR|WQ;//omitted WK to avoid illegal capture
 		OCCUPIED = WP|WN|WB|WR|WQ|WK|BP|BN|BB|BR|BQ|BK;
 		EMPTY = ~OCCUPIED;
 		//timeExperiment(WP);
-		String list = possibleWP(history,WP,BP)+
+		String list = possibleWP(WP,BP,EP)+
 		possibleN(OCCUPIED,WN)+
 		possibleB(OCCUPIED,WB)+
 		possibleR(OCCUPIED,WR)+
@@ -94,13 +94,13 @@ public class Moves {
 		unsafeForBlack(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK);
 		return list;
 	}
-	public static String possibleMovesB(String history,long WK,long WQ,long WB,long WN,long WR,long WP,long BK,long BQ,long BB,long BN,long BR,long BP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ){
+	public static String possibleMovesB(long WK,long WQ,long WB,long WN,long WR,long WP,long BK,long BQ,long BB,long BN,long BR,long BP,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ){
 		NOT_MY_PIECES = ~(BP|BN|BB|BR|BQ|BK|WK); //Added WK to avoid illegal capture
 		MY_PIECES = BP|BN|BB|BR|BQ;//omitted WK to avoid illegal capture
 		OCCUPIED = WP|WN|WB|WR|WQ|WK|BP|BN|BB|BR|BQ|BK;
 		EMPTY = ~OCCUPIED;
 		
-		String list = possibleBP(history,BP,WP)+
+		String list = possibleBP(BP,WP,EP)+
 		possibleN(OCCUPIED,BN)+
 		possibleB(OCCUPIED,BB)+
 		possibleR(OCCUPIED,BR)+
@@ -112,7 +112,7 @@ public class Moves {
 	}
 	
 	//Get Pawn Moves - Dependent on Color
-	public static String possibleWP(String history,long WP,long BP){
+	public static String possibleWP(long WP,long BP,long EP){
 		String list="";
 		//x1,y1,x2,y2
 		//Capture Right
@@ -187,6 +187,26 @@ public class Moves {
             possibility=PAWN_MOVES&~(PAWN_MOVES-1);
         }
 		//x1,x2,Space,"E"
+		//en passant right
+		possibility  =  (WP<<1)&BP&RANK_5 &~FILE_A&EP;
+        if (possibility != 0)
+        {
+            int i=Long.numberOfTrailingZeros(possibility);
+            list+= ""+(i%8-1)+(i%8)+" E";
+            PAWN_MOVES&=~(possibility);
+            possibility=PAWN_MOVES&~(PAWN_MOVES-1);
+        }
+		//en passant left
+		possibility  =  (WP>>>1)&BP&RANK_5 &~FILE_H&EP;
+        if (possibility != 0)
+        {
+            int i=Long.numberOfTrailingZeros(possibility);
+            list+= ""+(i%8+1)+(i%8)+" E";
+            PAWN_MOVES&=~(possibility);
+            possibility=PAWN_MOVES&~(PAWN_MOVES-1);
+        }
+
+        /*
         if (history.length()>=4){
         	if ( (history.charAt(history.length()-4) == history.charAt(history.length()-2)) && (Math.abs(history.charAt(history.length()-1)-history.charAt(history.length()-3))==2) ){
         		int eFile=history.charAt(history.length()-2)-'0';
@@ -210,10 +230,11 @@ public class Moves {
                 }
         	}
         }
+        */
         
 		return list;
 	}
-	public static String possibleBP(String history,long BP,long WP){
+	public static String possibleBP(long BP,long WP,long EP){
 		String list="";
 		//x1,y1,x2,y2
 		//Capture Right
@@ -288,6 +309,25 @@ public class Moves {
             possibility=PAWN_MOVES&~(PAWN_MOVES-1);
         }
 		//x1,x2,"bE"
+      //en passant right
+		possibility  =  (BP<<1)&WP&RANK_4 &~FILE_A&EP;
+        if (possibility != 0)
+        {
+            int i=Long.numberOfTrailingZeros(possibility);
+            list+= ""+(i%8-1)+(i%8)+"bE";
+            PAWN_MOVES&=~(possibility);
+            possibility=PAWN_MOVES&~(PAWN_MOVES-1);
+        }
+		//en passant left
+		possibility  =  (BP>>>1)&WP&RANK_4 &~FILE_H&EP;
+        if (possibility != 0)
+        {
+            int i=Long.numberOfTrailingZeros(possibility);
+            list+= ""+(i%8+1)+(i%8)+"bE";
+            PAWN_MOVES&=~(possibility);
+            possibility=PAWN_MOVES&~(PAWN_MOVES-1);
+        }
+        /*
         if (history.length()>=4){
         	if ( (history.charAt(history.length()-4) == history.charAt(history.length()-2)) && (Math.abs(history.charAt(history.length()-1)-history.charAt(history.length()-3))==2) ){
         		int eFile=history.charAt(history.length()-2)-'0';
@@ -311,6 +351,7 @@ public class Moves {
                 }
         	}
         }
+         */
         
 		return list;
 	}
