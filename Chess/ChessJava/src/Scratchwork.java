@@ -205,13 +205,14 @@ public class Scratchwork {
 		myBoard = new Chessboard(0);
 		System.out.println(myBoard);
 		*/
-		
+		/*
 		Chessboard myBoard = new Chessboard(-1);
 		System.out.println(myBoard);
-		String moves = Moves.possibleMovesW(myBoard.WK, myBoard.WQ, myBoard.WB, myBoard.WN, myBoard.WR, myBoard.WP, myBoard.BK, myBoard.BQ, myBoard.BB, myBoard.BN, myBoard.BR, myBoard.BP,myBoard.EP,myBoard.CWK,myBoard.CWQ,myBoard.CBK,myBoard.CBQ);
+		String moves = Moves.possibleMovesW(myBoard.WP, myBoard.WN, myBoard.WB, myBoard.WR, myBoard.WQ, myBoard.WK, myBoard.BP, myBoard.BN, myBoard.BB, myBoard.BR, myBoard.BQ, myBoard.BK, myBoard.EP, myBoard.CWK, myBoard.CWQ, myBoard.CBK, myBoard.CBQ);
 		System.out.println(moves);
-		moves = Moves.possibleMovesB(myBoard.WK, myBoard.WQ, myBoard.WB, myBoard.WN, myBoard.WR, myBoard.WP, myBoard.BK, myBoard.BQ, myBoard.BB, myBoard.BN, myBoard.BR, myBoard.BP,myBoard.EP,myBoard.CWK,myBoard.CWQ,myBoard.CBK,myBoard.CBQ);
+		moves = Moves.possibleMovesB(myBoard.WP, myBoard.WN, myBoard.WB, myBoard.WR, myBoard.WQ, myBoard.WK, myBoard.BP, myBoard.BN, myBoard.BB, myBoard.BR, myBoard.BQ, myBoard.BK, myBoard.EP, myBoard.CWK, myBoard.CWQ, myBoard.CBK, myBoard.CBQ);
 		System.out.println(moves);
+		*/
 		/*
 		Long WR             = 0b0000100000000000000000000000000000100000000000000000000000000001L;
 		Long WP             = 0b0000001000000010010000000000000000001000000010000000000000000000L;
@@ -233,8 +234,31 @@ public class Scratchwork {
         endTime=System.currentTimeMillis();
         System.out.println("That took "+(endTime-startTime)+" milliseconds for the second method");
 		*/
-		
-		
+		/*
+		Chessboard myBoard = new Chessboard(-1);
+		System.out.println(myBoard);
+		Perft checker = new Perft();
+		checker.perftMaxDepth = 6;
+		checker.perftMoveCounter = 0;
+		boolean whiteToMove = false;
+		checker.perft(myBoard.WP, myBoard.WN, myBoard.WB, myBoard.WR, myBoard.WQ, myBoard.WK, myBoard.BP, myBoard.BN, myBoard.BB, myBoard.BR, myBoard.BQ, myBoard.BK, myBoard.EP, myBoard.CWK, myBoard.CWQ, myBoard.CBK, myBoard.CBQ, whiteToMove, 0);
+		System.out.println(checker.perftMoveCounter);
+		*/
+		/*
+		String fenString1 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+		String fenString2 = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
+		Chessboard myBoard = new Chessboard(fenString1);
+		Chessboard myBoard2 = new Chessboard(fenString2);
+		System.out.println(myBoard);
+		System.out.println(myBoard2);
+		*/
+
+		String fenString = "1k6/1b6/8/8/7R/8/8/4K2R b K - 0 1";
+		Chessboard myBoard = new Chessboard(fenString);
+		//System.out.println(myBoard);
+		Perft.perftMaxDepth = 5;
+		Perft.perftRoot(myBoard.WP, myBoard.WN, myBoard.WB, myBoard.WR, myBoard.WQ, myBoard.WK, myBoard.BP, myBoard.BN, myBoard.BB, myBoard.BR, myBoard.BQ, myBoard.BK, myBoard.EP, myBoard.CWK, myBoard.CWQ, myBoard.CBK, myBoard.CBQ, myBoard.WhiteToMove, 0,true);
+
 	}
 	
 }
