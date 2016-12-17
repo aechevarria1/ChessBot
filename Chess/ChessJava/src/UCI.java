@@ -2,7 +2,8 @@ import java.util.*;
 public class UCI {
     static String ENGINENAME="ArinzeBot v1";
     public static void uciCommunication() {
-    	Scanner input = new Scanner(System.in);
+    	@SuppressWarnings("resource")
+		Scanner input = new Scanner(System.in);
         while (true)
         {
             String inputString=input.nextLine();

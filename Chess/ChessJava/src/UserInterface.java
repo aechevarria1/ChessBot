@@ -1,8 +1,9 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+@SuppressWarnings("serial")
 public class UserInterface extends JPanel {
-	/*
+	
     static long WP=0L,WN=0L,WB=0L,WR=0L,WQ=0L,WK=0L,BP=0L,BN=0L,BB=0L,BR=0L,BQ=0L,BK=0L,EP=0L;
     static boolean CWK=true,CWQ=true,CBK=true,CBQ=true,WhiteToMove=true;//true=castle is possible
     static long UniversalWP=0L,UniversalWN=0L,UniversalWB=0L,UniversalWR=0L,
@@ -11,7 +12,7 @@ public class UserInterface extends JPanel {
             UniversalEP=0L;
     static boolean UniversalCastleWK=true,UniversalCastleWQ=true,
             UniversalCastleBK=true,UniversalCastleBQ=true;//true=castle is possible
-    */
+    
     static int humanIsWhite=1;
     static int rating=0;
     static int border=10;//the amount of empty space around the frame
@@ -28,11 +29,11 @@ public class UserInterface extends JPanel {
                 (Toolkit.getDefaultToolkit().getScreenSize().height-javaF.getHeight())/2);
         javaF.setVisible(true);
         //newGame();
-        Chessboard.importFEN("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1");
-        //Chessboard.initiateStandardChess();
-        Chessboard.drawArray(Chessboard.WP,Chessboard.WN,Chessboard.WB,Chessboard.WR,Chessboard.WQ,Chessboard.WK,Chessboard.BP,Chessboard.BN,Chessboard.BB,Chessboard.BR,Chessboard.BQ,Chessboard.BK);
+        BoardGeneration.importFEN("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1");
+        //BoardGeneration.initiateStandardChess();
+        BoardGeneration.drawArray(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
         long startTime=System.currentTimeMillis();
-        Perft.perftRoot(Chessboard.WP,Chessboard.WN,Chessboard.WB,Chessboard.WR,Chessboard.WQ,Chessboard.WK,Chessboard.BP,Chessboard.BN,Chessboard.BB,Chessboard.BR,Chessboard.BQ,Chessboard.BK,Chessboard.EP,Chessboard.CWK,Chessboard.CWQ,Chessboard.CBK,Chessboard.CBQ,Chessboard.WhiteToMove,0,true);
+        Perft.perftRoot(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove,0,true);
         long endTime=System.currentTimeMillis();
         System.out.println("Nodes: "+Perft.perftTotalMoveCounter);
         System.out.println("That took "+(endTime-startTime)+" milliseconds");
@@ -68,18 +69,18 @@ public class UserInterface extends JPanel {
         chessPieceImage=new ImageIcon(System.getProperty("user.dir")+"\\ChessPieces.png").getImage();
         for (int i=0;i<64;i++) {
             int j=-1,k=-1;
-            if (((Chessboard.WP>>i)&1)==1) {j=5; k=1-humanIsWhite;}
-            else if (((Chessboard.BP>>i)&1)==1) {j=5; k=humanIsWhite;}
-            else if (((Chessboard.WB>>i)&1)==1) {j=3;k=1-humanIsWhite;}
-            else if (((Chessboard.BB>>i)&1)==1) {j=3;k=humanIsWhite;}
-            else if (((Chessboard.WN>>i)&1)==1) {j=4;k=1-humanIsWhite;}
-            else if (((Chessboard.BN>>i)&1)==1) {j=4;k=humanIsWhite;}
-            else if (((Chessboard.WQ>>i)&1)==1) {j=1;k=1-humanIsWhite;}
-            else if (((Chessboard.BQ>>i)&1)==1) {j=1;k=humanIsWhite;}
-            else if (((Chessboard.WR>>i)&1)==1) {j=2;k=1-humanIsWhite;}
-            else if (((Chessboard.BR>>i)&1)==1) {j=2;k=humanIsWhite;}
-            else if (((Chessboard.WK>>i)&1)==1) {j=0;k=1-humanIsWhite;}
-            else if (((Chessboard.BK>>i)&1)==1) {j=0;k=humanIsWhite;}
+            if (((WP>>i)&1)==1) {j=5; k=1-humanIsWhite;}
+            else if (((BP>>i)&1)==1) {j=5; k=humanIsWhite;}
+            else if (((WB>>i)&1)==1) {j=3;k=1-humanIsWhite;}
+            else if (((BB>>i)&1)==1) {j=3;k=humanIsWhite;}
+            else if (((WN>>i)&1)==1) {j=4;k=1-humanIsWhite;}
+            else if (((BN>>i)&1)==1) {j=4;k=humanIsWhite;}
+            else if (((WQ>>i)&1)==1) {j=1;k=1-humanIsWhite;}
+            else if (((BQ>>i)&1)==1) {j=1;k=humanIsWhite;}
+            else if (((WR>>i)&1)==1) {j=2;k=1-humanIsWhite;}
+            else if (((BR>>i)&1)==1) {j=2;k=humanIsWhite;}
+            else if (((WK>>i)&1)==1) {j=0;k=1-humanIsWhite;}
+            else if (((BK>>i)&1)==1) {j=0;k=humanIsWhite;}
             if (j!=-1 && k!=-1) {
                 g.drawImage(chessPieceImage, (int)((i%8)*squareSize)+border, (int)((7-(i/8))*squareSize)+border, (int)((i%8+1)*squareSize)+border, (int)((7-(i/8)+1)*squareSize)+border, j*64, k*64, (j+1)*64, (k+1)*64, this);
             }
@@ -106,8 +107,8 @@ public class UserInterface extends JPanel {
         g.fill3DRect((int)(8*squareSize)+2*border, (int)(8*squareSize)+border, 200, border, true);
     }
     public static void newGame() {
-        Chessboard.initiateStandardChess();
-        Chessboard.CWK=true; Chessboard.CWQ=true; Chessboard.CBK=true; Chessboard.CBQ=true;
-        Chessboard.EP=0;
+        BoardGeneration.initiateStandardChess();
+        CWK=true; CWQ=true; CBK=true; CBQ=true;
+        EP=0;
     }
 }
