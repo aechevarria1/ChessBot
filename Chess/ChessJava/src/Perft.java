@@ -38,16 +38,34 @@ public class Perft {
             WRt=Moves.makeMoveCastle(WRt, WK|BK, moves.substring(i,i+4), 'R');
             BRt=Moves.makeMoveCastle(BRt, WK|BK, moves.substring(i,i+4), 'r');
             boolean CWKt=CWK,CWQt=CWQ,CBKt=CBK,CBQt=CBQ;
+            int start=0,end=0;
             if (Character.isDigit(moves.charAt(i+3))) {//'regular' move
-                int start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
-                int end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);
-                if (((1L<<start)&WK)!=0) {CWKt=false; CWQt=false;}
-                if (((1L<<start)&BK)!=0) {CBKt=false; CBQt=false;}
-                if ((((1L<<start)|(1L<<end))&WR&(1L<<7))!=0) {CWKt=false;}
-                if ((((1L<<start)|(1L<<end))&WR&(1L))!=0) {CWQt=false;}
-                if ((((1L<<start)|(1L<<end))&BR&(1L<<63))!=0) {CBKt=false;}
-                if ((((1L<<start)|(1L<<end))&BR&(1L<<56))!=0) {CBQt=false;}
+                start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
+                end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);;
+            } else if (moves.charAt(i+3)=='P') {//pawn promotion
+                if (Character.isUpperCase(moves.charAt(i+2))) {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[6]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[7]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[1]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[0]);
+                }
+            } else if (moves.charAt(i+3)=='E') {//en passant
+                if (moves.charAt(i+2)=='W') {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[4]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[5]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[3]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[2]);
+                }
             }
+            //Always check if we are breaking the castling
+            if (((1L<<start)&WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<56))!=0) {CBQt=false;}
             if (((WKt&Moves.unsafeForWhite(WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt))==0 && WhiteToMove) ||
                     ((BKt&Moves.unsafeForBlack(WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt))==0 && !WhiteToMove)) {
                 perft(WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove,depth+1);

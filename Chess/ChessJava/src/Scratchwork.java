@@ -252,13 +252,21 @@ public class Scratchwork {
 		System.out.println(myBoard);
 		System.out.println(myBoard2);
 		*/
-
-		String fenString = "1k6/1b6/8/8/7R/8/8/4K2R b K - 0 1";
-		Chessboard myBoard = new Chessboard(fenString);
+		/*
+		String fenString = "3r4/1p1k3n/r1p3p1/2p4p/6b1/5R2/8/6KR b - - 5 44";
+		Chessboard.Chessboard(fenString);
 		//System.out.println(myBoard);
-		Perft.perftMaxDepth = 5;
-		Perft.perftRoot(myBoard.WP, myBoard.WN, myBoard.WB, myBoard.WR, myBoard.WQ, myBoard.WK, myBoard.BP, myBoard.BN, myBoard.BB, myBoard.BR, myBoard.BQ, myBoard.BK, myBoard.EP, myBoard.CWK, myBoard.CWQ, myBoard.CBK, myBoard.CBQ, myBoard.WhiteToMove, 0,true);
-
+		Perft.perftMaxDepth = 2;
+		Perft.perftRoot(Chessboard.WP, Chessboard.WN, Chessboard.WB, Chessboard.WR, Chessboard.WQ, Chessboard.WK, Chessboard.BP, Chessboard.BN, Chessboard.BB, Chessboard.BR, Chessboard.BQ, Chessboard.BK, Chessboard.EP, Chessboard.CWK, Chessboard.CWQ, Chessboard.CBK, Chessboard.CBQ, Chessboard.WhiteToMove, 0,true);
+		 */
+		
+		String moves = "242374736564161516147664765576576352637263546345050005010502050305040515050605073707371737273747375737673777363536453626364636273647";
+		for (int i=0;i<moves.length();i+=4) {
+			System.out.println(moves.substring(i,i+4));
+			System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4)));
+			System.out.println("Break");
+		}
+		System.out.println(Math.max(1, 2));
 	}
 	
 }

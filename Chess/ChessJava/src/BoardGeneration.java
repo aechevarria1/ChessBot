@@ -1,106 +1,18 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
-public class Chessboard {
-	// Pieces
-	static long WK;
-	static long WQ;
-	static long WB;
-	static long WN;
-	static long WR;
-	static long WP;
-	static long BK;
-	static long BQ;
-	static long BB;
-	static long BN;
-	static long BR;
-	static long BP;
-	static long EP=0b0L;
-	
-	//Castling rights
-	static boolean CWK=true;//true=castle is possible
-	static boolean CWQ=true;
-	static boolean CBK=true;
-	static boolean CBQ=true;
-	
-	//Turn
-	static boolean WhiteToMove = true; //white starts first by default
-	
-	static String history = "";
-	static long[] boardInformation;
+public class BoardGeneration {
 
 	//Board Instantiation
-	public static void Chessboard(){
-		//To make an instance of a new Chessboard
-		WK = 0b0000000000010000L;
-		WQ = 0b0000000000001000L;
-		WB = 0b0000000000100100L;
-		WN = 0b0000000001000010L;
-		WR = 0b0000000010000001L;
-		WP = 0b1111111100000000L;
-		
-		BK = 0b0001000000000000000000000000000000000000000000000000000000000000L;
-		BQ = 0b0000100000000000000000000000000000000000000000000000000000000000L;
-		BB = 0b0010010000000000000000000000000000000000000000000000000000000000L;
-		BN = 0b0100001000000000000000000000000000000000000000000000000000000000L;
-		BR = 0b1000000100000000000000000000000000000000000000000000000000000000L;
-		BP = 0b0000000011111111000000000000000000000000000000000000000000000000L;
-		boardInformation = new long[] {WK,WQ,WB,WN,WR,WP,BK,BQ,BB,BN,BR,BP};
-	}
-	public static void Chessboard(String directory, String infoType){
+	public static void initiateLoadedGame(String directory, String infoType){
 		//To load a chess game.
 		//TODO
 	}
-	public static void Chessboard(long[] givenBoardInformation){
-		//To load a chess game from a collection of information about pieces.
-		
-		WK = givenBoardInformation[0];
-		WQ = givenBoardInformation[1];
-		WB = givenBoardInformation[2];
-		WN = givenBoardInformation[3];
-		WR = givenBoardInformation[4];
-		WP = givenBoardInformation[5];
-		BK = givenBoardInformation[6];
-		BQ = givenBoardInformation[7];
-		BB = givenBoardInformation[8];
-		BN = givenBoardInformation[9];
-		BR = givenBoardInformation[10];
-		BP = givenBoardInformation[11];
-		boardInformation = givenBoardInformation;
-	}
-	public static void Chessboard(int standard){
-		if (standard==1){
-			initiateStandardChess();
-		}
-		else if (standard==0){
-			initiateChess960();
-		}
-		else{
-			initiateDebugChess();
-			history = "";
-		}
-		boardInformation = new long[] {WK,WQ,WB,WN,WR,WP,BK,BQ,BB,BN,BR,BP};
-	}
-	public static void Chessboard(String fenString){
-		importFEN(fenString);
-		updateBoardInformation();
-	}
-	public static void updateBoardInformation(){
-		boardInformation = new long[] {WK,WQ,WB,WN,WR,WP,BK,BQ,BB,BN,BR,BP};
-	}
-	
-	// Piece Combinations
-	public static Long whitePieces(){
-		return WK|WQ|WB|WN|WR|WP;
-	}
-	public static Long blackPieces(){
-		return BK|BQ|BB|BN|BR|BP;
-	}
-	public static Long allPieces(){
-		Long allPieces = WK|WQ|WB|WN|WR|WP|BK|BQ|BB|BN|BR|BP;
-		return allPieces;
+
+	public static long[] getBoardInformation(){
+		long[] boardInformation = new long[] {Orion.WK,Orion.WQ,Orion.WB,Orion.WN,Orion.WR,Orion.WP,Orion.BK,Orion.BQ,Orion.BB,Orion.BN,Orion.BR,Orion.BP};
+		return boardInformation;
 	}
 	
 	//Visualizing Boards
@@ -135,6 +47,7 @@ public class Chessboard {
 		
 		//Make board object and collect pieces
 		String[][] board = new String[8][8];
+		long[] boardInformation = getBoardInformation();
 		long [] whitePieces = Arrays.copyOfRange(boardInformation, 0, 6);
 		long [] blackPieces = Arrays.copyOfRange(boardInformation, 6, 12);
 		String [] pieceTypes = {"K","Q","B","N","R","P"};
@@ -162,7 +75,7 @@ public class Chessboard {
 	
 	//Types of Boards
     public static void initiateDebugChess() {
-        WP=0L;WN=0L;WB=0L;WR=0L;WQ=0L;WK=0L;BP=0L;BN=0L;BB=0L;BR=0L;BQ=0L;BK=0L;
+        long WP=0L,WN=0L,WB=0L,WR=0L,WQ=0L,WK=0L,BP=0L,BN=0L,BB=0L,BR=0L,BQ=0L,BK=0L;
         String chessBoard[][]={
                 {"r","q","q","q","k","b","n","r"},
                 {"p","p","p","p","p","p","p","p"},
@@ -172,10 +85,10 @@ public class Chessboard {
                 {" "," "," "," ","P"," "," "," "},
                 {"P","P","P","P"," ","P","P","P"},
                 {"R","Q","Q","Q","K","B","N","R"}};
-        arrayToBitboards(chessBoard);
+        arrayToBitboards(chessBoard,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
     }
     public static void initiateStandardChess() {
-        WP=0L;WN=0L;WB=0L;WR=0L;WQ=0L;WK=0L;BP=0L;BN=0L;BB=0L;BR=0L;BQ=0L;BK=0L;
+        long WP=0L,WN=0L,WB=0L,WR=0L,WQ=0L,WK=0L,BP=0L,BN=0L,BB=0L,BR=0L,BQ=0L,BK=0L;
         String chessBoard[][]={
                 {"r","n","b","q","k","b","n","r"},
                 {"p","p","p","p","p","p","p","p"},
@@ -185,10 +98,10 @@ public class Chessboard {
                 {" "," "," "," "," "," "," "," "},
                 {"P","P","P","P","P","P","P","P"},
                 {"R","N","B","Q","K","B","N","R"}};
-        arrayToBitboards(chessBoard);
+        arrayToBitboards(chessBoard,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
     }
     public static void initiateChess960() {
-    	WP=0L;WN=0L;WB=0L;WR=0L;WQ=0L;WK=0L;BP=0L;BN=0L;BB=0L;BR=0L;BQ=0L;BK=0L;
+    	long WP=0L,WN=0L,WB=0L,WR=0L,WQ=0L,WK=0L,BP=0L,BN=0L,BB=0L,BR=0L,BQ=0L,BK=0L;
         String chessBoard[][]={
             {" "," "," "," "," "," "," "," "},
             {"p","p","p","p","p","p","p","p"},
@@ -252,7 +165,7 @@ public class Chessboard {
         }
         chessBoard[0][counter]="r";
         chessBoard[7][counter]="R";
-        arrayToBitboards(chessBoard);
+        arrayToBitboards(chessBoard,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
     }
     
     public static void importFEN(String fenString){
@@ -260,12 +173,12 @@ public class Chessboard {
     	//Examples:
     	// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
     	// rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
-    	WP=0; WN=0; WB=0;
-        WR=0; WQ=0; WK=0;
-        BP=0; BN=0; BB=0;
-        BR=0; BQ=0; BK=0;
-        CWK=false; CWQ=false;
-        CBK=false; CBQ=false;
+    	Orion.WP=0; Orion.WN=0; Orion.WB=0;
+    	Orion.WR=0; Orion.WQ=0; Orion.WK=0;
+    	Orion.BP=0; Orion.BN=0; Orion.BB=0;
+    	Orion.BR=0; Orion.BQ=0; Orion.BK=0;
+    	Orion.CWK=false; Orion.CWQ=false;
+        Orion.CBK=false; Orion.CBQ=false;
 		int charIndex = 0;
 		int boardIndex = 0;
 		//trueBoardIndex = (7-boardIndex/8)*8 + boardIndex%8;
@@ -274,51 +187,51 @@ public class Chessboard {
 			switch (fenString.charAt(charIndex++))
 			{
 			case 'P':
-				WP |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.WP |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'p':
-				BP |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.BP |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'N':
-				WN |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.WN |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'n':
-				BN |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.BN |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'B':
-				WB |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.WB |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'b':
-				BB |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.BB |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'R':
-				WR |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.WR |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'r':
-				BR |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.BR |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'Q':
-				WQ |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.WQ |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'q':
-				BQ |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.BQ |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'K':
-				WK |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.WK |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case 'k':
-				BK |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
+				Orion.BK |= (1L << ((7-boardIndex/8)*8 + boardIndex%8));
 				boardIndex++;
 				break;
 			case '/':
@@ -343,7 +256,7 @@ public class Chessboard {
 				break;
 			}
 		}
-		WhiteToMove = (fenString.charAt(++charIndex) == 'w');
+		Orion.WhiteToMove = (fenString.charAt(++charIndex) == 'w');
 		charIndex += 2;
 		while (fenString.charAt(charIndex) != ' ')
 		{
@@ -351,13 +264,13 @@ public class Chessboard {
 			{
 			case '-':
 				break;
-			case 'K': CWK = true;
+			case 'K': Orion.CWK = true;
 				break;
-			case 'Q': CWQ = true;
+			case 'Q': Orion.CWQ = true;
 				break;
-			case 'k': CBK = true;
+			case 'k': Orion.CBK = true;
 				break;
-			case 'q': CBQ = true;
+			case 'q': Orion.CBQ = true;
 				break;
 			default:
 				break;
@@ -365,7 +278,7 @@ public class Chessboard {
 		}
 		if (fenString.charAt(++charIndex) != '-')
 		{
-			EP = Moves.FileMasks8[fenString.charAt(charIndex++) - 'a'];
+			Orion.EP = Moves.FileMasks8[fenString.charAt(charIndex++) - 'a'];
 		}
 		//TODO 
 		//the rest of the fenString is not yet utilized
@@ -373,7 +286,7 @@ public class Chessboard {
     }
     
     //Helper Functions
-    public static void arrayToBitboards(String[][] chessBoard) {
+    public static void arrayToBitboards(String[][] chessBoard,long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK) {
         String Binary;
         for (int i=0;i<64;i++) {
             Binary="0000000000000000000000000000000000000000000000000000000000000000";
@@ -405,6 +318,11 @@ public class Chessboard {
                     break;
             }
         }
+        drawArray(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
+        Orion.WP=WP; Orion.WN=WN; Orion.WB=WB;
+        Orion.WR=WR; Orion.WQ=WQ; Orion.WK=WK;
+        Orion.BP=BP; Orion.BN=BN; Orion.BB=BB;
+        Orion.BR=BR; Orion.BQ=BQ; Orion.BK=BK;
     }
     public static long convertStringToBitboard(String Binary) {
         if (Binary.charAt(0)=='0') {//not going to be a negative number
