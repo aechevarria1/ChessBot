@@ -857,11 +857,5 @@ public class Moves {
             System.out.println(list);   
         }
     }  
-	
-	// Others
-	boolean blackCanKingSideCastle = true;
-	boolean blackCanQueenSideCastle = true;
-	boolean whiteCanKingSideCastle = true;
-	boolean whiteCanQueenSideCastle = true;
 
 }

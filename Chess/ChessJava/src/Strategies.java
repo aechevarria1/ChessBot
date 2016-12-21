@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class Strategies {
 	public static String Strategy1(String moves){
@@ -35,31 +38,31 @@ public class Strategies {
                 }
             }
             //Always check if we are breaking the castling rights
-            boolean CWKt=Chessboard.CWK,CWQt=Chessboard.CWQ,CBKt=Chessboard.CBK,CBQt=Chessboard.CBQ;
-            if (((1L<<start)&Chessboard.WK)!=0) {CWKt=false; CWQt=false;}
-            if (((1L<<start)&Chessboard.BK)!=0) {CBKt=false; CBQt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.WR&(1L<<7))!=0) {CWKt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.WR&(1L))!=0) {CWQt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.BR&(1L<<63))!=0) {CBKt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.BR&(1L<<56))!=0) {CBQt=false;}
+            boolean CWKt=Orion.CWK,CWQt=Orion.CWQ,CBKt=Orion.CBK,CBQt=Orion.CBQ;
+            if (((1L<<start)&Orion.WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&Orion.BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<56))!=0) {CBQt=false;}
             
             //Do the moves
-            long EPt=Moves.makeMoveEP(Chessboard.WP|Chessboard.BP,moves.substring(i,i+4)),
-            WPt=Moves.makeMove(Chessboard.WP, moves.substring(i,i+4), 'P'),
-            WNt=Moves.makeMove(Chessboard.WN, moves.substring(i,i+4), 'N'),
-            WBt=Moves.makeMove(Chessboard.WB, moves.substring(i,i+4), 'B'),
-            WRt=Moves.makeMove(Chessboard.WR, moves.substring(i,i+4), 'R'),
-            WQt=Moves.makeMove(Chessboard.WQ, moves.substring(i,i+4), 'Q'),
-            WKt=Moves.makeMove(Chessboard.WK, moves.substring(i,i+4), 'K'),
-            BPt=Moves.makeMove(Chessboard.BP, moves.substring(i,i+4), 'p'),
-            BNt=Moves.makeMove(Chessboard.BN, moves.substring(i,i+4), 'n'),
-            BBt=Moves.makeMove(Chessboard.BB, moves.substring(i,i+4), 'b'),
-            BRt=Moves.makeMove(Chessboard.BR, moves.substring(i,i+4), 'r'),
-            BQt=Moves.makeMove(Chessboard.BQ, moves.substring(i,i+4), 'q'),
-            BKt=Moves.makeMove(Chessboard.BK, moves.substring(i,i+4), 'k');
-            WRt=Moves.makeMoveCastle(Chessboard.WR, Chessboard.WK|Chessboard.BK, moves.substring(i,i+4), 'R');
-            BRt=Moves.makeMoveCastle(Chessboard.BR, Chessboard.WK|Chessboard.BK, moves.substring(i,i+4), 'r');
-            boolean WhiteToMovet=!Chessboard.WhiteToMove;
+            long EPt=Moves.makeMoveEP(Orion.WP|Orion.BP,moves.substring(i,i+4)),
+            WPt=Moves.makeMove(Orion.WP, moves.substring(i,i+4), 'P'),
+            WNt=Moves.makeMove(Orion.WN, moves.substring(i,i+4), 'N'),
+            WBt=Moves.makeMove(Orion.WB, moves.substring(i,i+4), 'B'),
+            WRt=Moves.makeMove(Orion.WR, moves.substring(i,i+4), 'R'),
+            WQt=Moves.makeMove(Orion.WQ, moves.substring(i,i+4), 'Q'),
+            WKt=Moves.makeMove(Orion.WK, moves.substring(i,i+4), 'K'),
+            BPt=Moves.makeMove(Orion.BP, moves.substring(i,i+4), 'p'),
+            BNt=Moves.makeMove(Orion.BN, moves.substring(i,i+4), 'n'),
+            BBt=Moves.makeMove(Orion.BB, moves.substring(i,i+4), 'b'),
+            BRt=Moves.makeMove(Orion.BR, moves.substring(i,i+4), 'r'),
+            BQt=Moves.makeMove(Orion.BQ, moves.substring(i,i+4), 'q'),
+            BKt=Moves.makeMove(Orion.BK, moves.substring(i,i+4), 'k');
+            WRt=Moves.makeMoveCastle(Orion.WR, Orion.WK|Orion.BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(Orion.BR, Orion.WK|Orion.BK, moves.substring(i,i+4), 'r');
+            boolean WhiteToMovet=!Orion.WhiteToMove;
             String nextMoves = "";
             boolean isChecked;
             if (WhiteToMovet) {
@@ -109,31 +112,31 @@ public class Strategies {
                 }
             }
             //Always check if we are breaking the castling rights
-            boolean CWKt=Chessboard.CWK,CWQt=Chessboard.CWQ,CBKt=Chessboard.CBK,CBQt=Chessboard.CBQ;
-            if (((1L<<start)&Chessboard.WK)!=0) {CWKt=false; CWQt=false;}
-            if (((1L<<start)&Chessboard.BK)!=0) {CBKt=false; CBQt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.WR&(1L<<7))!=0) {CWKt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.WR&(1L))!=0) {CWQt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.BR&(1L<<63))!=0) {CBKt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.BR&(1L<<56))!=0) {CBQt=false;}
+            boolean CWKt=Orion.CWK,CWQt=Orion.CWQ,CBKt=Orion.CBK,CBQt=Orion.CBQ;
+            if (((1L<<start)&Orion.WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&Orion.BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<56))!=0) {CBQt=false;}
             
             //Do the moves
-            long EPt=Moves.makeMoveEP(Chessboard.WP|Chessboard.BP,moves.substring(i,i+4)),
-            WPt=Moves.makeMove(Chessboard.WP, moves.substring(i,i+4), 'P'),
-            WNt=Moves.makeMove(Chessboard.WN, moves.substring(i,i+4), 'N'),
-            WBt=Moves.makeMove(Chessboard.WB, moves.substring(i,i+4), 'B'),
-            WRt=Moves.makeMove(Chessboard.WR, moves.substring(i,i+4), 'R'),
-            WQt=Moves.makeMove(Chessboard.WQ, moves.substring(i,i+4), 'Q'),
-            WKt=Moves.makeMove(Chessboard.WK, moves.substring(i,i+4), 'K'),
-            BPt=Moves.makeMove(Chessboard.BP, moves.substring(i,i+4), 'p'),
-            BNt=Moves.makeMove(Chessboard.BN, moves.substring(i,i+4), 'n'),
-            BBt=Moves.makeMove(Chessboard.BB, moves.substring(i,i+4), 'b'),
-            BRt=Moves.makeMove(Chessboard.BR, moves.substring(i,i+4), 'r'),
-            BQt=Moves.makeMove(Chessboard.BQ, moves.substring(i,i+4), 'q'),
-            BKt=Moves.makeMove(Chessboard.BK, moves.substring(i,i+4), 'k');
-            WRt=Moves.makeMoveCastle(WRt, Chessboard.WK|Chessboard.BK, moves.substring(i,i+4), 'R');
-            BRt=Moves.makeMoveCastle(BRt, Chessboard.WK|Chessboard.BK, moves.substring(i,i+4), 'r');
-            boolean WhiteToMovet=!Chessboard.WhiteToMove;
+            long EPt=Moves.makeMoveEP(Orion.WP|Orion.BP,moves.substring(i,i+4)),
+            WPt=Moves.makeMove(Orion.WP, moves.substring(i,i+4), 'P'),
+            WNt=Moves.makeMove(Orion.WN, moves.substring(i,i+4), 'N'),
+            WBt=Moves.makeMove(Orion.WB, moves.substring(i,i+4), 'B'),
+            WRt=Moves.makeMove(Orion.WR, moves.substring(i,i+4), 'R'),
+            WQt=Moves.makeMove(Orion.WQ, moves.substring(i,i+4), 'Q'),
+            WKt=Moves.makeMove(Orion.WK, moves.substring(i,i+4), 'K'),
+            BPt=Moves.makeMove(Orion.BP, moves.substring(i,i+4), 'p'),
+            BNt=Moves.makeMove(Orion.BN, moves.substring(i,i+4), 'n'),
+            BBt=Moves.makeMove(Orion.BB, moves.substring(i,i+4), 'b'),
+            BRt=Moves.makeMove(Orion.BR, moves.substring(i,i+4), 'r'),
+            BQt=Moves.makeMove(Orion.BQ, moves.substring(i,i+4), 'q'),
+            BKt=Moves.makeMove(Orion.BK, moves.substring(i,i+4), 'k');
+            WRt=Moves.makeMoveCastle(WRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'r');
+            boolean WhiteToMovet=!Orion.WhiteToMove;
             String nextMoves = "";
             boolean isChecked;
             if (WhiteToMovet) {
@@ -152,18 +155,18 @@ public class Strategies {
             
             //Count opponents pieces.
             int numQueens,numRooks,numBishops,numKnights,numPawns;
-            if (Chessboard.WhiteToMove) {
-            	numQueens = bitCount(BQt);
-            	numRooks = bitCount(BRt);
-            	numBishops = bitCount(BBt);
-            	numKnights = bitCount(BNt);
-            	numPawns = bitCount(BPt);
+            if (Orion.WhiteToMove) {
+            	numQueens = Rating.bitCount(BQt);
+            	numRooks = Rating.bitCount(BRt);
+            	numBishops = Rating.bitCount(BBt);
+            	numKnights = Rating.bitCount(BNt);
+            	numPawns = Rating.bitCount(BPt);
             }else{
-            	numQueens = bitCount(WQt);
-            	numRooks = bitCount(WRt);
-            	numBishops = bitCount(WBt);
-            	numKnights = bitCount(WNt);
-            	numPawns = bitCount(WPt);
+            	numQueens = Rating.bitCount(WQt);
+            	numRooks = Rating.bitCount(WRt);
+            	numBishops = Rating.bitCount(WBt);
+            	numKnights = Rating.bitCount(WNt);
+            	numPawns = Rating.bitCount(WPt);
             	
             }
             int score = 100-numQueens*9-numRooks*5-(numKnights+numBishops)*3-numPawns;
@@ -213,31 +216,31 @@ public class Strategies {
                 }
             }
             //Always check if we are breaking the castling rights
-            boolean CWKt=Chessboard.CWK,CWQt=Chessboard.CWQ,CBKt=Chessboard.CBK,CBQt=Chessboard.CBQ;
-            if (((1L<<start)&Chessboard.WK)!=0) {CWKt=false; CWQt=false;}
-            if (((1L<<start)&Chessboard.BK)!=0) {CBKt=false; CBQt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.WR&(1L<<7))!=0) {CWKt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.WR&(1L))!=0) {CWQt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.BR&(1L<<63))!=0) {CBKt=false;}
-            if ((((1L<<start)|(1L<<end))&Chessboard.BR&(1L<<56))!=0) {CBQt=false;}
+            boolean CWKt=Orion.CWK,CWQt=Orion.CWQ,CBKt=Orion.CBK,CBQt=Orion.CBQ;
+            if (((1L<<start)&Orion.WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&Orion.BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<56))!=0) {CBQt=false;}
             
             //Do the moves
-            long EPt=Moves.makeMoveEP(Chessboard.WP|Chessboard.BP,moves.substring(i,i+4)),
-            WPt=Moves.makeMove(Chessboard.WP, moves.substring(i,i+4), 'P'),
-            WNt=Moves.makeMove(Chessboard.WN, moves.substring(i,i+4), 'N'),
-            WBt=Moves.makeMove(Chessboard.WB, moves.substring(i,i+4), 'B'),
-            WRt=Moves.makeMove(Chessboard.WR, moves.substring(i,i+4), 'R'),
-            WQt=Moves.makeMove(Chessboard.WQ, moves.substring(i,i+4), 'Q'),
-            WKt=Moves.makeMove(Chessboard.WK, moves.substring(i,i+4), 'K'),
-            BPt=Moves.makeMove(Chessboard.BP, moves.substring(i,i+4), 'p'),
-            BNt=Moves.makeMove(Chessboard.BN, moves.substring(i,i+4), 'n'),
-            BBt=Moves.makeMove(Chessboard.BB, moves.substring(i,i+4), 'b'),
-            BRt=Moves.makeMove(Chessboard.BR, moves.substring(i,i+4), 'r'),
-            BQt=Moves.makeMove(Chessboard.BQ, moves.substring(i,i+4), 'q'),
-            BKt=Moves.makeMove(Chessboard.BK, moves.substring(i,i+4), 'k');
-            WRt=Moves.makeMoveCastle(WRt, Chessboard.WK|Chessboard.BK, moves.substring(i,i+4), 'R');
-            BRt=Moves.makeMoveCastle(BRt, Chessboard.WK|Chessboard.BK, moves.substring(i,i+4), 'r');
-            boolean WhiteToMovet=!Chessboard.WhiteToMove;
+            long EPt=Moves.makeMoveEP(Orion.WP|Orion.BP,moves.substring(i,i+4)),
+            WPt=Moves.makeMove(Orion.WP, moves.substring(i,i+4), 'P'),
+            WNt=Moves.makeMove(Orion.WN, moves.substring(i,i+4), 'N'),
+            WBt=Moves.makeMove(Orion.WB, moves.substring(i,i+4), 'B'),
+            WRt=Moves.makeMove(Orion.WR, moves.substring(i,i+4), 'R'),
+            WQt=Moves.makeMove(Orion.WQ, moves.substring(i,i+4), 'Q'),
+            WKt=Moves.makeMove(Orion.WK, moves.substring(i,i+4), 'K'),
+            BPt=Moves.makeMove(Orion.BP, moves.substring(i,i+4), 'p'),
+            BNt=Moves.makeMove(Orion.BN, moves.substring(i,i+4), 'n'),
+            BBt=Moves.makeMove(Orion.BB, moves.substring(i,i+4), 'b'),
+            BRt=Moves.makeMove(Orion.BR, moves.substring(i,i+4), 'r'),
+            BQt=Moves.makeMove(Orion.BQ, moves.substring(i,i+4), 'q'),
+            BKt=Moves.makeMove(Orion.BK, moves.substring(i,i+4), 'k');
+            WRt=Moves.makeMoveCastle(WRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'r');
+            boolean WhiteToMovet=!Orion.WhiteToMove;
             String nextMoves = "";
             boolean isChecked;
             if (WhiteToMovet) {
@@ -256,28 +259,28 @@ public class Strategies {
             
             //Count opponents pieces.
             int numQueens,numRooks,numBishops,numKnights,numPawns,numMyQueens,numMyRooks,numMyBishops,numMyKnights,numMyPawns;
-            if (Chessboard.WhiteToMove) {
-            	numQueens = bitCount(BQt);
-            	numRooks = bitCount(BRt);
-            	numBishops = bitCount(BBt);
-            	numKnights = bitCount(BNt);
-            	numPawns = bitCount(BPt);
-            	numMyQueens = bitCount(WQt);
-            	numMyRooks = bitCount(WRt);
-            	numMyBishops = bitCount(WBt);
-            	numMyKnights = bitCount(WNt);
-            	numMyPawns = bitCount(WPt);
+            if (Orion.WhiteToMove) {
+            	numQueens = Rating.bitCount(BQt);
+            	numRooks = Rating.bitCount(BRt);
+            	numBishops = Rating.bitCount(BBt);
+            	numKnights = Rating.bitCount(BNt);
+            	numPawns = Rating.bitCount(BPt);
+            	numMyQueens = Rating.bitCount(WQt);
+            	numMyRooks = Rating.bitCount(WRt);
+            	numMyBishops = Rating.bitCount(WBt);
+            	numMyKnights = Rating.bitCount(WNt);
+            	numMyPawns = Rating.bitCount(WPt);
             }else{
-            	numQueens = bitCount(WQt);
-            	numRooks = bitCount(WRt);
-            	numBishops = bitCount(WBt);
-            	numKnights = bitCount(WNt);
-            	numPawns = bitCount(WPt);
-            	numMyQueens = bitCount(BQt);
-            	numMyRooks = bitCount(BRt);
-            	numMyBishops = bitCount(BBt);
-            	numMyKnights = bitCount(BNt);
-            	numMyPawns = bitCount(BPt);
+            	numQueens = Rating.bitCount(WQt);
+            	numRooks = Rating.bitCount(WRt);
+            	numBishops = Rating.bitCount(WBt);
+            	numKnights = Rating.bitCount(WNt);
+            	numPawns = Rating.bitCount(WPt);
+            	numMyQueens = Rating.bitCount(BQt);
+            	numMyRooks = Rating.bitCount(BRt);
+            	numMyBishops = Rating.bitCount(BBt);
+            	numMyKnights = Rating.bitCount(BNt);
+            	numMyPawns = Rating.bitCount(BPt);
             	
             }
             int score = -numQueens*9-numRooks*5-(numKnights+numBishops)*3-numPawns;
@@ -297,68 +300,255 @@ public class Strategies {
 		System.out.println("info score cp "+bestScore);
 		return bestMove.substring(index,index+4);
 	}
-	public static int bitCount(long i) {
-	    /*
-	     * Counts the number of 1's in the binary form of a long.
-	     */
-		int count = 0;
-		while (i!=0){
-			count++;
-			i = (i>>>Long.numberOfTrailingZeros(i))>>>1;
-		}
-	    return count;
+	
+	public static String Strategy5(String moves){
+        /*
+         * Uses principal variation with random rating.
+         */
+		int bestScore = Integer.MIN_VALUE;
+        String bestMove = "";
+        int start=0,end=0;
+        for (int i=0;i<moves.length();i+=4) {
+        	//Get the start and end position for checking castling
+            if (Character.isDigit(moves.charAt(i+3))) {//'regular' move
+                start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
+                end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);;
+            } else if (moves.charAt(i+3)=='P') {//pawn promotion
+                if (Character.isUpperCase(moves.charAt(i+2))) {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[6]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[7]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[1]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[0]);
+                }
+            } else if (moves.charAt(i+3)=='E') {//en passant
+                if (moves.charAt(i+2)=='W') {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[4]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[5]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[3]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[2]);
+                }
+            }
+            //Always check if we are breaking the castling rights
+            boolean CWKt=Orion.CWK,CWQt=Orion.CWQ,CBKt=Orion.CBK,CBQt=Orion.CBQ;
+            if (((1L<<start)&Orion.WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&Orion.BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<56))!=0) {CBQt=false;}
+            
+            //Do the moves
+            long EPt=Moves.makeMoveEP(Orion.WP|Orion.BP,moves.substring(i,i+4)),
+            WPt=Moves.makeMove(Orion.WP, moves.substring(i,i+4), 'P'),
+            WNt=Moves.makeMove(Orion.WN, moves.substring(i,i+4), 'N'),
+            WBt=Moves.makeMove(Orion.WB, moves.substring(i,i+4), 'B'),
+            WRt=Moves.makeMove(Orion.WR, moves.substring(i,i+4), 'R'),
+            WQt=Moves.makeMove(Orion.WQ, moves.substring(i,i+4), 'Q'),
+            WKt=Moves.makeMove(Orion.WK, moves.substring(i,i+4), 'K'),
+            BPt=Moves.makeMove(Orion.BP, moves.substring(i,i+4), 'p'),
+            BNt=Moves.makeMove(Orion.BN, moves.substring(i,i+4), 'n'),
+            BBt=Moves.makeMove(Orion.BB, moves.substring(i,i+4), 'b'),
+            BRt=Moves.makeMove(Orion.BR, moves.substring(i,i+4), 'r'),
+            BQt=Moves.makeMove(Orion.BQ, moves.substring(i,i+4), 'q'),
+            BKt=Moves.makeMove(Orion.BK, moves.substring(i,i+4), 'k');
+            WRt=Moves.makeMoveCastle(WRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'r');
+            //Score the move
+            int scoreOfMove = -PrincipalVariation.pvSearch2(-100000,100000,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!Orion.WhiteToMove,1,Orion.WhiteToMove);
+            //System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4))+" had a score of :"+scoreOfMove);
+            if (scoreOfMove>bestScore){
+            	bestScore = scoreOfMove;
+            	bestMove = moves.substring(i,i+4);
+            }
+            else if(scoreOfMove==bestScore){
+            	bestMove = bestMove.concat(moves.substring(i,i+4));
+            }
+        }
+        //Choose randomly from the best moves
+		int index=(int)(Math.floor(Math.random()*(bestMove.length()/4))*4);
+		System.out.println("info score cp "+bestScore);
+		return bestMove.substring(index,index+4);
 	}
 	
-	public static String alphaBeta(int depth,double beta,double alpha,String move,int player){
-		//TODO
-		//generate moves
-		String possibleMoves="";
-		//filter moves
-	    if ((depth==0)|| possibleMoves.length()==0){
-	    	//TODO evaluate board
-	    	double evaluation = 0.0;
-	        return move+(evaluation*(player*2-1));
-	    }
-	    if (player==1){
-	    	String newMove = null, selectedMove;
-	    	double selectedScore = 0;
-	        double v = -99999;
-	        for (int i=0;i<possibleMoves.length();i+=4){
-	        	newMove = possibleMoves.substring(i, i+4);
-	        	String result = alphaBeta(depth-1, beta, alpha,newMove, 1);
-	        	selectedMove = result.substring(0,4);
-	        	selectedScore = Double.parseDouble(result.substring(4));
-	            v = Math.max(v, selectedScore);
-	            alpha = Math.max(alpha, v);
-	            if (beta <= alpha){
-	            	break; //(* beta cut-off *)
-	            }
-	                
-	        }
-
-	        return newMove+selectedScore;
-	    }
-
-	    else{
-	    	String newMove, selectedMove;
-	    	double selectedScore;
-	        double v = 99999;
-	        for (int i=0;i<possibleMoves.length();i+=4){
-	        	newMove = possibleMoves.substring(i, i+4);
-	        	String result = alphaBeta(depth-1, beta, alpha,newMove, 1);
-	        	selectedMove = result.substring(0,4);
-	        	selectedScore = Double.parseDouble(result.substring(4));
-	            v = Math.min(v, selectedScore);
-	            beta = Math.min(beta, v);
-	            if (beta <= alpha){
-	            	 break; //(* alpha cut-off *)
-	            }	               
-	        }
-	        return newMove+selectedScore;
-	    }
-
-		
-		//returns in the form of 1234b###### (5 character move then score)
-		//return "";
+	public static String Strategy6(String moves){
+        /*
+         * Uses principal variation with random rating.
+         */
+		int bestScore = Integer.MIN_VALUE;
+        String bestMove = "";
+        int start=0,end=0;
+        for (int i=0;i<moves.length();i+=4) {
+        	String currMove = moves.substring(i, i+4);
+        	String returnedValue = PrincipalVariation.alphaBeta(Orion.searchDepth,Integer.MIN_VALUE, Integer.MAX_VALUE,currMove,1,Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove);
+        	int scoreOfMove =Integer.parseInt(returnedValue.substring(4));
+        	String currMove2 = returnedValue.substring(0,4);
+        			
+            if (scoreOfMove>bestScore){
+            	bestScore = scoreOfMove;
+            	bestMove = moves.substring(i,i+4);
+            }
+            else if(scoreOfMove==bestScore){
+            	bestMove = bestMove.concat(moves.substring(i,i+4));
+            }
+        }
+        //Choose randomly from the best moves
+		int index=(int)(Math.floor(Math.random()*(bestMove.length()/4))*4);
+		System.out.println("info score cp "+bestScore);
+		return bestMove.substring(index,index+4);
 	}
+	
+	public static String Strategy7(String moves){
+        /*
+         * Uses negamax with random rating.
+         */
+		System.out.println(moves);
+		int bestScore = -10000;
+        String bestMove = "";
+        int start=0,end=0;
+        int coefficient = 1;
+        if (Orion.searchDepth%2==0){
+        	coefficient = -1;
+        }
+        for (int i=0;i<moves.length();i+=4) {
+        	//Get the start and end position for checking castling
+            if (Character.isDigit(moves.charAt(i+3))) {//'regular' move
+                start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
+                end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);;
+            } else if (moves.charAt(i+3)=='P') {//pawn promotion
+                if (Character.isUpperCase(moves.charAt(i+2))) {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[6]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[7]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[1]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[0]);
+                }
+            } else if (moves.charAt(i+3)=='E') {//en passant
+                if (moves.charAt(i+2)=='W') {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[4]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[5]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[3]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[2]);
+                }
+            }
+            //Always check if we are breaking the castling rights
+            boolean CWKt=Orion.CWK,CWQt=Orion.CWQ,CBKt=Orion.CBK,CBQt=Orion.CBQ;
+            if (((1L<<start)&Orion.WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&Orion.BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<56))!=0) {CBQt=false;}
+            
+            //Do the moves
+            long EPt=Moves.makeMoveEP(Orion.WP|Orion.BP,moves.substring(i,i+4)),
+            WPt=Moves.makeMove(Orion.WP, moves.substring(i,i+4), 'P'),
+            WNt=Moves.makeMove(Orion.WN, moves.substring(i,i+4), 'N'),
+            WBt=Moves.makeMove(Orion.WB, moves.substring(i,i+4), 'B'),
+            WRt=Moves.makeMove(Orion.WR, moves.substring(i,i+4), 'R'),
+            WQt=Moves.makeMove(Orion.WQ, moves.substring(i,i+4), 'Q'),
+            WKt=Moves.makeMove(Orion.WK, moves.substring(i,i+4), 'K'),
+            BPt=Moves.makeMove(Orion.BP, moves.substring(i,i+4), 'p'),
+            BNt=Moves.makeMove(Orion.BN, moves.substring(i,i+4), 'n'),
+            BBt=Moves.makeMove(Orion.BB, moves.substring(i,i+4), 'b'),
+            BRt=Moves.makeMove(Orion.BR, moves.substring(i,i+4), 'r'),
+            BQt=Moves.makeMove(Orion.BQ, moves.substring(i,i+4), 'q'),
+            BKt=Moves.makeMove(Orion.BK, moves.substring(i,i+4), 'k');
+            WRt=Moves.makeMoveCastle(WRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'r');
+            
+            //Score the move
+            //int scoreOfMove = PrincipalVariation.negaMax(-10000,10000,0,1,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!Orion.WhiteToMove);
+            int scoreOfMove = coefficient*PrincipalVariation.negaMax(10000,-10000,1,-1,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!Orion.WhiteToMove);
+            System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4))+" had a score of :"+scoreOfMove);
+            if (scoreOfMove>bestScore||bestMove.length()==0){
+            	bestScore = scoreOfMove;
+            	bestMove = moves.substring(i,i+4);
+            }
+            else if(scoreOfMove==bestScore){
+            	bestMove = bestMove.concat(moves.substring(i,i+4));
+            }
+        }
+        //Choose randomly from the best moves
+        System.out.println("All best moves: "+bestMove);
+		int index=(int)(Math.floor(Math.random()*(bestMove.length()/4))*4);
+		System.out.println("info score cp "+bestScore);
+		return bestMove.substring(index,index+4);
+	}
+	
+
+	public static String Strategy8(String moves){
+        /*
+         * Uses principal variation with random rating.
+         */
+		int bestScore = Integer.MIN_VALUE;
+        String bestMove = "";
+        int start=0,end=0;
+        for (int i=0;i<moves.length();i+=4) {
+        	//Get the start and end position for checking castling
+            if (Character.isDigit(moves.charAt(i+3))) {//'regular' move
+                start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
+                end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);;
+            } else if (moves.charAt(i+3)=='P') {//pawn promotion
+                if (Character.isUpperCase(moves.charAt(i+2))) {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[6]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[7]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[1]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[0]);
+                }
+            } else if (moves.charAt(i+3)=='E') {//en passant
+                if (moves.charAt(i+2)=='W') {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[4]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[5]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[3]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[2]);
+                }
+            }
+            //Always check if we are breaking the castling rights
+            boolean CWKt=Orion.CWK,CWQt=Orion.CWQ,CBKt=Orion.CBK,CBQt=Orion.CBQ;
+            if (((1L<<start)&Orion.WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&Orion.BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<56))!=0) {CBQt=false;}
+            
+            //Do the moves
+            long EPt=Moves.makeMoveEP(Orion.WP|Orion.BP,moves.substring(i,i+4)),
+            WPt=Moves.makeMove(Orion.WP, moves.substring(i,i+4), 'P'),
+            WNt=Moves.makeMove(Orion.WN, moves.substring(i,i+4), 'N'),
+            WBt=Moves.makeMove(Orion.WB, moves.substring(i,i+4), 'B'),
+            WRt=Moves.makeMove(Orion.WR, moves.substring(i,i+4), 'R'),
+            WQt=Moves.makeMove(Orion.WQ, moves.substring(i,i+4), 'Q'),
+            WKt=Moves.makeMove(Orion.WK, moves.substring(i,i+4), 'K'),
+            BPt=Moves.makeMove(Orion.BP, moves.substring(i,i+4), 'p'),
+            BNt=Moves.makeMove(Orion.BN, moves.substring(i,i+4), 'n'),
+            BBt=Moves.makeMove(Orion.BB, moves.substring(i,i+4), 'b'),
+            BRt=Moves.makeMove(Orion.BR, moves.substring(i,i+4), 'r'),
+            BQt=Moves.makeMove(Orion.BQ, moves.substring(i,i+4), 'q'),
+            BKt=Moves.makeMove(Orion.BK, moves.substring(i,i+4), 'k');
+            WRt=Moves.makeMoveCastle(WRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'r');
+            //Score the move
+            int scoreOfMove = -PrincipalVariation.pvSearch3(-100000,100000,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!Orion.WhiteToMove,1,Orion.WhiteToMove);
+            //System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4))+"* had a score of :"+scoreOfMove);
+            if (scoreOfMove>bestScore){
+            	bestScore = scoreOfMove;
+            	bestMove = moves.substring(i,i+4);
+            }
+            else if(scoreOfMove==bestScore){
+            	bestMove = bestMove.concat(moves.substring(i,i+4));
+            }
+        }
+        //Choose randomly from the best moves
+		int index=(int)(Math.floor(Math.random()*(bestMove.length()/4))*4);
+		System.out.println("info score cp "+bestScore);
+		return bestMove.substring(index,index+4);
+	}
+	
+	
 }

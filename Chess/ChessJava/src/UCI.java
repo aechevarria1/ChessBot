@@ -29,7 +29,7 @@ public class UCI {
             }
             else if (inputString.startsWith("go"))
             {
-                inputGo();
+                inputGo(inputString);
             }
             else if (inputString.equals("quit"))
             {
@@ -51,7 +51,9 @@ public class UCI {
         //set options
     }
     public static void inputIsReady() {
-         System.out.println("readyok");
+    	//TODO implement the Zorbist and TranspositionTable in principle variation
+    	//Zobrist.zobristFillArray();
+    	System.out.println("readyok");
     }
     public static void inputUCINewGame() {
         //add code here
@@ -146,7 +148,12 @@ public class UCI {
             }
         }
     }
-	public static void inputGo() {
+	public static void inputGo(String input) {
+		input=input.concat(" ");
+        if (input.contains("depth")) {
+            input=input.substring(input.indexOf("depth")+6);
+            Orion.searchDepth = Integer.parseInt(input.substring(0,input.indexOf(' ')));
+        }
         //Search for the best move
         String move;
         if (Orion.WhiteToMove) {
@@ -157,7 +164,7 @@ public class UCI {
         //filter invalid moves
         move = Moves.filterMoves(move,Orion.WhiteToMove,Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP);
         //Select a random move for now.
-        String bestMove = Strategies.Strategy2(move);
+        String bestMove = Strategies.Strategy8(move);
         System.out.println("bestmove "+moveToAlgebra(bestMove));
     }
     public static String moveToAlgebra(String move) {
@@ -203,5 +210,7 @@ public class UCI {
     }
     public static void inputPrint() {
         BoardGeneration.drawArray(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK);
+        //System.out.print("Zobrist Hash: ");
+        //System.out.println(Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove));
     }
 }

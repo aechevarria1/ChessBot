@@ -1,12 +1,15 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class PrincipalVariation {
     public static int zWSearch(int beta,long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,int depth) {//fail-hard zero window search, returns either beta-1 or beta
         int score = Integer.MIN_VALUE;
         //alpha == beta - 1
         //this is either a cut- or all-node
-        if (depth == Orion.searchDepth)
+        if (depth >= Orion.searchDepth)
         {
-            score = Rating.evaluate();
+            score = Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove);
             return score;
         }
         String moves;
@@ -84,12 +87,12 @@ public class PrincipalVariation {
         }
         return -1;
     }
-    public static int pvSearch(int alpha,int beta,long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,int depth) {//using fail soft with negamax
+    public static int pvSearch(int alpha,int beta,long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,int depth,boolean selfColor) {//using fail soft with negamax
         int bestScore;
         int bestMoveIndex = -1;
-        if (depth == Orion.searchDepth)
+        if (depth >= Orion.searchDepth)
         {
-            bestScore = Rating.evaluate();
+            bestScore = Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove);
             return bestScore;
         }
         String moves;
@@ -102,7 +105,31 @@ public class PrincipalVariation {
         int firstLegalMove = getFirstLegalMove(moves,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove);
         if (firstLegalMove == -1)
         {
-            return WhiteToMove ? Orion.MATE_SCORE : -Orion.MATE_SCORE;
+        	boolean unsafe;
+        	if (WhiteToMove){
+        		unsafe = (WK&Moves.unsafeForWhite(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK))!=0;
+        	}
+        	else{
+        		unsafe = (BK&Moves.unsafeForBlack(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK))!=0;
+        	}
+        	//Note: Scores are opposite of what would be expected because we are collecting the negative of pvs
+        	if ((WhiteToMove==selfColor)&&unsafe){
+        		//Checkmate on me
+        		return Orion.MATE_SCORE;
+        	}
+        	else if ((WhiteToMove==selfColor)&& !unsafe){
+        		//Avoid Stalemate
+        		return -Orion.MATE_SCORE/2;
+        	}
+        	else if((WhiteToMove!=selfColor)&& !unsafe){
+        		//Avoid Stalemate
+        		return Orion.MATE_SCORE/2;
+        	}
+        	else{
+        		//Checkmate on Opponent
+        		return -Orion.MATE_SCORE;
+        	}
+            //return WhiteToMove ? Orion.MATE_SCORE : -Orion.MATE_SCORE;
         }
         long WPt=Moves.makeMove(WP, moves.substring(firstLegalMove,firstLegalMove+4), 'P'), WNt=Moves.makeMove(WN, moves.substring(firstLegalMove,firstLegalMove+4), 'N'),
                 WBt=Moves.makeMove(WB, moves.substring(firstLegalMove,firstLegalMove+4), 'B'), WRt=Moves.makeMove(WR, moves.substring(firstLegalMove,firstLegalMove+4), 'R'),
@@ -143,7 +170,10 @@ public class PrincipalVariation {
         if ((((1L<<start)|(1L<<end))&BR&(1L<<63))!=0) {CBKt=false;}
         if ((((1L<<start)|(1L<<end))&BR&(1L<<56))!=0) {CBQt=false;}
         
-        bestScore = -pvSearch(-beta,-alpha,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove,depth+1);
+        bestScore = -pvSearch(-beta,-alpha,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove,depth+1,selfColor);
+        //System.out.println("Evaluation gave a score of: "+bestScore);
+        //System.out.println("mark 1 --- alpha: "+alpha+", beta: "+beta);
+        
         Orion.moveCounter++;
         if (Math.abs(bestScore) == Orion.MATE_SCORE)
         {
@@ -157,10 +187,12 @@ public class PrincipalVariation {
                 //It is not a PV move
                 //However, it will usually cause a cutoff so it can
                 //be considered a best move if no other move is found
+                //System.out.println("returning best score --- alpha: "+alpha+", beta: "+beta);
                 return bestScore;
             }
             alpha = bestScore;
         }
+        //System.out.println("mark 2 --- alpha: "+alpha+", beta: "+beta);
         bestMoveIndex = firstLegalMove;
         for (int i=firstLegalMove+4;i<moves.length();i+=4) {
             int score;
@@ -217,9 +249,11 @@ public class PrincipalVariation {
             if ((score > alpha) && (score < beta))
             {
                 //research with window [alpha;beta]
-                bestScore = -pvSearch(-beta,-alpha,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,!WhiteToMove,depth+1);
+                bestScore = -pvSearch(-beta,-alpha,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,!WhiteToMove,depth+1,selfColor);
+                //TODO change the score to bestScore
                 if (score>alpha)
                 {
+                	//TODO change the score to bestScore
                     bestMoveIndex = i;
                     alpha = score;
                 }
@@ -239,4 +273,391 @@ public class PrincipalVariation {
         }
         return bestScore;
     }
+
+    public static String alphaBeta(int depth, int alpha, int beta, String move,int player,long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ, boolean WhiteToMove) {
+        //return in the form of 1234b##########
+        String moves;
+        if (WhiteToMove) {
+            moves=Moves.possibleMovesW(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        } else {
+            moves=Moves.possibleMovesB(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        }
+        moves = Moves.filterMoves(moves, WhiteToMove, WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK, EP);
+        if (depth==0 || moves.length()==0) {
+        	return move+(Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove)*(player*2-1));}
+        
+        //sort later
+        boolean WhiteToMovet = !WhiteToMove;
+        player=1-player;//either 1 or 0
+        
+        for (int i=0;i<moves.length();i+=4) {
+            long WPt=Moves.makeMove(WP, moves.substring(i,i+4), 'P'), WNt=Moves.makeMove(WN, moves.substring(i,i+4), 'N'),
+                    WBt=Moves.makeMove(WB, moves.substring(i,i+4), 'B'), WRt=Moves.makeMove(WR, moves.substring(i,i+4), 'R'),
+                    WQt=Moves.makeMove(WQ, moves.substring(i,i+4), 'Q'), WKt=Moves.makeMove(WK, moves.substring(i,i+4), 'K'),
+                    BPt=Moves.makeMove(BP, moves.substring(i,i+4), 'p'), BNt=Moves.makeMove(BN, moves.substring(i,i+4), 'n'),
+                    BBt=Moves.makeMove(BB, moves.substring(i,i+4), 'b'), BRt=Moves.makeMove(BR, moves.substring(i,i+4), 'r'),
+                    BQt=Moves.makeMove(BQ, moves.substring(i,i+4), 'q'), BKt=Moves.makeMove(BK, moves.substring(i,i+4), 'k'),
+                    EPt=Moves.makeMoveEP(WP|BP,moves.substring(i,i+4));
+            WRt=Moves.makeMoveCastle(WRt, WK|BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, WK|BK, moves.substring(i,i+4), 'r');
+            boolean CWKt=CWK,CWQt=CWQ,CBKt=CBK,CBQt=CBQ;
+            int start=0,end=0;
+            if (Character.isDigit(moves.charAt(i+3))) {//'regular' move
+                start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
+                end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);;
+            } else if (moves.charAt(i+3)=='P') {//pawn promotion
+                if (Character.isUpperCase(moves.charAt(i+2))) {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[6]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[7]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[1]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[0]);
+                }
+            } else if (moves.charAt(i+3)=='E') {//en passant
+                if (moves.charAt(i+2)=='W') {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[4]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[5]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[3]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[2]);
+                }
+            }
+            //Always check if we are breaking the castling
+            if (((1L<<start)&WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<56))!=0) {CBQt=false;}
+            String returnString=alphaBeta(depth-1,alpha,beta, moves.substring(i,i+4),player,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,WhiteToMovet);
+            int value=Integer.valueOf(returnString.substring(4));
+            if (player==0) {
+                if (value<=beta) {beta=value; if (depth==Orion.searchDepth) {move=returnString.substring(0,4);}}
+            } else {
+                if (value>alpha) {alpha=value; if (depth==Orion.searchDepth) {move=returnString.substring(0,4);}}
+            }
+            if (alpha>=beta) {
+                if (player==0) {return move+beta;} else {return move+alpha;}
+            }
+        }
+        if (player==0) {return move+beta;} else {return move+alpha;}
+    }
+    
+    public static int negaMax(int alpha,int beta,int depth,int player,long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove) {//using fail soft with negamax
+        int bestScore;
+        if (depth == Orion.searchDepth)
+        {
+            bestScore = player*Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove);
+            return bestScore;
+        }
+        String moves;
+        if (WhiteToMove) {
+            moves=Moves.possibleMovesW(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        } else {
+            moves=Moves.possibleMovesB(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        }
+        moves = Moves.filterMoves(moves, WhiteToMove, WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK, EP);
+        
+        if (moves.length()==0)
+        {
+        	//TODO differentiate checkmate and stalemate
+            bestScore = player*Orion.MATE_SCORE;
+            return bestScore;
+        }
+        //sortMoves();
+        bestScore = -10000;
+        for (int i=0;i<moves.length();i+=4) {
+            int score;
+            Orion.moveCounter++;
+            long WPt=Moves.makeMove(WP, moves.substring(i,i+4), 'P'), WNt=Moves.makeMove(WN, moves.substring(i,i+4), 'N'),
+                    WBt=Moves.makeMove(WB, moves.substring(i,i+4), 'B'), WRt=Moves.makeMove(WR, moves.substring(i,i+4), 'R'),
+                    WQt=Moves.makeMove(WQ, moves.substring(i,i+4), 'Q'), WKt=Moves.makeMove(WK, moves.substring(i,i+4), 'K'),
+                    BPt=Moves.makeMove(BP, moves.substring(i,i+4), 'p'), BNt=Moves.makeMove(BN, moves.substring(i,i+4), 'n'),
+                    BBt=Moves.makeMove(BB, moves.substring(i,i+4), 'b'), BRt=Moves.makeMove(BR, moves.substring(i,i+4), 'r'),
+                    BQt=Moves.makeMove(BQ, moves.substring(i,i+4), 'q'), BKt=Moves.makeMove(BK, moves.substring(i,i+4), 'k'),
+                    EPt=Moves.makeMoveEP(WP|BP,moves.substring(i,i+4));
+            WRt=Moves.makeMoveCastle(WRt, WK|BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, WK|BK, moves.substring(i,i+4), 'r');
+            boolean CWKt=CWK,CWQt=CWQ,CBKt=CBK,CBQt=CBQ;
+            int start=0,end=0;
+            if (Character.isDigit(moves.charAt(i+3))) {//'regular' move
+                start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
+                end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);;
+            } else if (moves.charAt(i+3)=='P') {//pawn promotion
+                if (Character.isUpperCase(moves.charAt(i+2))) {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[6]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[7]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[1]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[0]);
+                }
+            } else if (moves.charAt(i+3)=='E') {//en passant
+                if (moves.charAt(i+2)=='W') {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[4]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[5]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[3]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[2]);
+                }
+            }
+            //Always check if we are breaking the castling
+            if (((1L<<start)&WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<56))!=0) {CBQt=false;}
+            
+            score = -negaMax(-beta,-alpha,depth+1,-player,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove);
+            bestScore = Math.max(bestScore, score);
+            alpha = Math.max(alpha, score);
+            if (alpha>=beta){
+            	break;
+            }
+        }
+        
+        return bestScore;
+    }
+    
+    public static int pvSearch2(int alpha,int beta,long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,int depth,boolean selfColor) {//using fail soft with negamax
+        int bestScore;
+        //int myInt = (selfColor==WhiteToMove) ? 1 : -1;
+        String moves;
+        if (WhiteToMove) {
+            moves=Moves.possibleMovesW(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        } else {
+            moves=Moves.possibleMovesB(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        }
+        moves = Moves.filterMoves(moves, WhiteToMove, WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK, EP);
+        
+        if (moves.length() == 0)
+        {
+        	
+        	boolean unsafeMe;
+        	if (WhiteToMove){
+        		unsafeMe = (WK&Moves.unsafeForWhite(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK))!=0;
+        		
+        	}
+        	else{
+        		unsafeMe = (BK&Moves.unsafeForBlack(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK))!=0;
+        	}
+        	//Note: Scores are opposite of what would be expected because we are collecting the negative of pvs
+        	if (unsafeMe){
+        		//Checkmate
+        		return -Orion.MATE_SCORE;
+        	}
+        	else{
+        		//Stalemate
+        		return Orion.MATE_SCORE/2;
+        	}
+        	/*
+        	else if(!unsafeMe&&!unsafeThem){
+        		//Avoid Stalemate
+        		return -Orion.MATE_SCORE/2;
+        	}
+        	else{
+        		//Checkmate on Opponent
+        		return Orion.MATE_SCORE;
+        	}*/
+            //return WhiteToMove ? Orion.MATE_SCORE : -Orion.MATE_SCORE;
+        }
+        if (depth >= Orion.searchDepth)
+        {
+        	bestScore = Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove);
+        	//bestScore = myInt*Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove);
+        	//System.out.println("bestScore: "+bestScore);
+        	
+            return bestScore;
+        }
+
+        //sortMoves();
+        
+        for (int i=0;i<moves.length();i+=4) {
+            int score;
+            Orion.moveCounter++;
+            //legal, non-castle move
+            long 
+            WPt=Moves.makeMove(WP, moves.substring(i,i+4), 'P'),
+            WNt=Moves.makeMove(WN, moves.substring(i,i+4), 'N'),
+            WBt=Moves.makeMove(WB, moves.substring(i,i+4), 'B'),
+            WRt=Moves.makeMove(WR, moves.substring(i,i+4), 'R'),
+            WQt=Moves.makeMove(WQ, moves.substring(i,i+4), 'Q'),
+            WKt=Moves.makeMove(WK, moves.substring(i,i+4), 'K'),
+            BPt=Moves.makeMove(BP, moves.substring(i,i+4), 'p'),
+            BNt=Moves.makeMove(BN, moves.substring(i,i+4), 'n'),
+            BBt=Moves.makeMove(BB, moves.substring(i,i+4), 'b'),
+            BRt=Moves.makeMove(BR, moves.substring(i,i+4), 'r'),
+            BQt=Moves.makeMove(BQ, moves.substring(i,i+4), 'q'),
+            BKt=Moves.makeMove(BK, moves.substring(i,i+4), 'k'),
+            EPt=Moves.makeMoveEP(WP|BP,moves.substring(i,i+4));
+            WRt=Moves.makeMoveCastle(WRt, WK|BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, WK|BK, moves.substring(i,i+4), 'r');
+            boolean CWKt=CWK,
+            CWQt=CWQ,
+            CBKt=CBK,
+            CBQt=CBQ;
+            int start=0,end=0;
+            if (Character.isDigit(moves.charAt(i+3))) {//'regular' move
+                start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
+                end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);;
+            } else if (moves.charAt(i+3)=='P') {//pawn promotion
+                if (Character.isUpperCase(moves.charAt(i+2))) {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[6]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[7]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[1]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[0]);
+                }
+            } else if (moves.charAt(i+3)=='E') {//en passant
+                if (moves.charAt(i+2)=='W') {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[4]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[5]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[3]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[2]);
+                }
+            }
+            //Always check if we are breaking the castling
+            if (((1L<<start)&WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<56))!=0) {CBQt=false;}
+            if (i!=0){
+            	score = -pvSearch2(-alpha-1,-alpha,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove,depth+1,selfColor);
+            	if (score>alpha && score<beta){
+            		score = -pvSearch2(-beta,-alpha,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove,depth+1,selfColor);
+            	}
+            }
+            else{
+            	score = -pvSearch2(-beta,-alpha,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove,depth+1,selfColor);
+            }
+            alpha = Math.max(alpha, score);
+            if (alpha>=beta){
+            	break;
+            }
+        }
+        return alpha;
+    }
+    
+    public static int pvSearch3(int alpha,int beta,long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,int depth,boolean selfColorIsWhite) {//using fail soft with negamax
+        int bestScore;
+        
+
+        String moves;
+        if (WhiteToMove) {
+            moves=Moves.possibleMovesW(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        } else {
+            moves=Moves.possibleMovesB(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        }
+        moves = Moves.filterMoves(moves, WhiteToMove, WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK, EP);
+        //sortMoves();
+        
+        if (moves.length() == 0)
+        {
+        	
+        	boolean unsafeMe;
+        	if (WhiteToMove){
+        		unsafeMe = (WK&Moves.unsafeForWhite(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK))!=0;
+        		
+        	}
+        	else{
+        		unsafeMe = (BK&Moves.unsafeForBlack(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK))!=0;
+        	}
+        	int myInt = (selfColorIsWhite==WhiteToMove) ? 1 : -1;
+        	//Note: Scores are opposite of what would be expected because we are collecting the negative of pvs
+        	if (unsafeMe){
+        		//Checkmate
+        		return -(Orion.MATE_SCORE-depth);//*myInt; //subtracted depth so moves that lead to checkmate faster are chosen
+        	}
+        	else{
+        		//Stalemate
+        		return -(-depth-Orion.MATE_SCORE/2);//*myInt;
+        	}
+
+            //return WhiteToMove ? Orion.MATE_SCORE : -Orion.MATE_SCORE;
+        }
+        
+        if (depth >= Orion.searchDepth)
+        {
+        	int myInt = (selfColorIsWhite==WhiteToMove) ? 1 : -1;
+        	//bestScore = Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove,selfColorIsWhite);
+        	bestScore = myInt*Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove,selfColorIsWhite);
+        	//System.out.println("bestScore: "+bestScore);
+        	
+            return bestScore;
+        }
+        
+        for (int i=0;i<moves.length();i+=4) {
+            int score;
+            Orion.moveCounter++;
+            //legal, non-castle move
+            long 
+            WPt=Moves.makeMove(WP, moves.substring(i,i+4), 'P'),
+            WNt=Moves.makeMove(WN, moves.substring(i,i+4), 'N'),
+            WBt=Moves.makeMove(WB, moves.substring(i,i+4), 'B'),
+            WRt=Moves.makeMove(WR, moves.substring(i,i+4), 'R'),
+            WQt=Moves.makeMove(WQ, moves.substring(i,i+4), 'Q'),
+            WKt=Moves.makeMove(WK, moves.substring(i,i+4), 'K'),
+            BPt=Moves.makeMove(BP, moves.substring(i,i+4), 'p'),
+            BNt=Moves.makeMove(BN, moves.substring(i,i+4), 'n'),
+            BBt=Moves.makeMove(BB, moves.substring(i,i+4), 'b'),
+            BRt=Moves.makeMove(BR, moves.substring(i,i+4), 'r'),
+            BQt=Moves.makeMove(BQ, moves.substring(i,i+4), 'q'),
+            BKt=Moves.makeMove(BK, moves.substring(i,i+4), 'k'),
+            EPt=Moves.makeMoveEP(WP|BP,moves.substring(i,i+4));
+            WRt=Moves.makeMoveCastle(WRt, WK|BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, WK|BK, moves.substring(i,i+4), 'r');
+            boolean CWKt=CWK,
+            CWQt=CWQ,
+            CBKt=CBK,
+            CBQt=CBQ;
+            int start=0,end=0;
+            if (Character.isDigit(moves.charAt(i+3))) {//'regular' move
+                start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
+                end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);;
+            } else if (moves.charAt(i+3)=='P') {//pawn promotion
+                if (Character.isUpperCase(moves.charAt(i+2))) {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[6]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[7]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[1]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[0]);
+                }
+            } else if (moves.charAt(i+3)=='E') {//en passant
+                if (moves.charAt(i+2)=='W') {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[4]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[5]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[3]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[2]);
+                }
+            }
+            //Always check if we are breaking the castling
+            if (((1L<<start)&WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<56))!=0) {CBQt=false;}
+            if (i!=0){
+            	score = -pvSearch3(-alpha-1,-alpha,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove,depth+1,selfColorIsWhite);
+            	if (score>alpha && score<beta){
+            		score = -pvSearch3(-beta,-score,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove,depth+1,selfColorIsWhite);
+            	}
+            }
+            else{
+            	score = -pvSearch3(-beta,-alpha,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove,depth+1,selfColorIsWhite);
+            }
+            //System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4))+" had a score of :"+score);
+            alpha = Math.max(alpha, score);
+            if (alpha>=beta){
+            	break;
+            }
+        }
+        return alpha;
+    }
+    
+
 }
