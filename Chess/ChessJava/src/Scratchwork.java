@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class Scratchwork {
@@ -26,6 +27,18 @@ public class Scratchwork {
 	      System.out.println();
 	   }
 	}
+	public static ArrayList<String> testMutations(ArrayList<String> testList,int depth,int maxDepth){
+		testList.add("1");
+		System.out.println("test List"+testList.size());
+		if (depth==maxDepth){
+			return testList;
+		}
+		
+		ArrayList<String> returnedList = testMutations(testList,depth+1,maxDepth);
+		System.out.println("returned List"+ returnedList.size());
+		System.out.println("test List"+ testList.size());
+		return returnedList;
+		}
 	public static String gridToString(String[][] board){
 		String val = new String();
 		val = "\ta\tb\tc\td\te\tf\tg\th\n";
@@ -271,8 +284,16 @@ public class Scratchwork {
 			System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4)));
 			System.out.println("Break");
 		}*/
+		/*
 		System.out.println(Math.random());
 		Zobrist.testDistribution();
+		*/
+		int[] x = new int[5];
+		System.out.println(x);
+		System.out.println(x[1]);
+		String[] y = new String[5];
+		System.out.println(y);
+		System.out.println(y[1]==null);
 	}
 	
 }

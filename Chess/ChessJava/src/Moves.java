@@ -790,8 +790,8 @@ public class Moves {
                     BQt=Moves.makeMove(BQ, moves.substring(i,i+4), 'q'), BKt=Moves.makeMove(BK, moves.substring(i,i+4), 'k');
             WRt=Moves.makeMoveCastle(WRt, WK|BK, moves.substring(i,i+4), 'R');
             BRt=Moves.makeMoveCastle(BRt, WK|BK, moves.substring(i,i+4), 'r');
-            if (((WKt&Moves.unsafeForWhite(WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt))==0 && WhiteToMove) ||
-                    ((BKt&Moves.unsafeForBlack(WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt))==0 && !WhiteToMove)) {
+            if ((WhiteToMove&&((WKt&Moves.unsafeForWhite(WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt))==0))||
+                    (!WhiteToMove &&((BKt&Moves.unsafeForBlack(WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt))==0))) {
             	safeMoves +=moves.substring(i, i+4);
             }
             

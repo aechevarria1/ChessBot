@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class BoardGeneration {
@@ -16,16 +17,14 @@ public class BoardGeneration {
 	}
 	
 	//Visualizing Boards
-	private static List<Integer> bitPositions(long number) {
+	public static List<Integer> bitPositions(long number) {
 		//Get the integer indeces of the ones in a 64 bit long
 	    List<Integer> positions = new ArrayList<>();
-	    int position = 0;
+	    int position;
 	    while (number != 0) {
-	        if ((number & 1) != 0) {
-	            positions.add(position);
-	        }
-	        position++;
-	        number = number >>> 1;
+	    	position = Long.numberOfTrailingZeros(number);
+	    	positions.add(position);
+	    	number = number^(1L<<position);
 	    }
 	    return positions;
 	}
@@ -86,6 +85,11 @@ public class BoardGeneration {
                 {"P","P","P","P"," ","P","P","P"},
                 {"R","Q","Q","Q","K","B","N","R"}};
         arrayToBitboards(chessBoard,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
+        String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
+        Orion.HISTORY = new ArrayList<String> ();
+        Orion.HISTORY.add(fenBoard);
+        Orion.ThreeMoveRep = new HashMap<String,Integer> ();
+        Orion.ThreeMoveRep.put(fenBoard, 1);
     }
     public static void initiateStandardChess() {
         long WP=0L,WN=0L,WB=0L,WR=0L,WQ=0L,WK=0L,BP=0L,BN=0L,BB=0L,BR=0L,BQ=0L,BK=0L;
@@ -99,6 +103,11 @@ public class BoardGeneration {
                 {"P","P","P","P","P","P","P","P"},
                 {"R","N","B","Q","K","B","N","R"}};
         arrayToBitboards(chessBoard,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
+        String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
+        Orion.HISTORY = new ArrayList<String> ();
+        Orion.HISTORY.add(fenBoard);
+        Orion.ThreeMoveRep = new HashMap<String,Integer> ();
+        Orion.ThreeMoveRep.put(fenBoard, 1);
     }
     public static void initiateChess960() {
     	long WP=0L,WN=0L,WB=0L,WR=0L,WQ=0L,WK=0L,BP=0L,BN=0L,BB=0L,BR=0L,BQ=0L,BK=0L;
@@ -166,6 +175,11 @@ public class BoardGeneration {
         chessBoard[0][counter]="r";
         chessBoard[7][counter]="R";
         arrayToBitboards(chessBoard,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
+        String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
+        Orion.HISTORY = new ArrayList<String> ();
+        Orion.HISTORY.add(fenBoard);
+        Orion.ThreeMoveRep = new HashMap<String,Integer> ();
+        Orion.ThreeMoveRep.put(fenBoard, 1);
     }
     
     public static void importFEN(String fenString){
@@ -280,9 +294,26 @@ public class BoardGeneration {
 		{
 			Orion.EP = Moves.FileMasks8[fenString.charAt(charIndex++) - 'a'];
 		}
-		//TODO 
-		//the rest of the fenString is not yet utilized
-		//Keeping track of move count
+		charIndex+=2;
+		int charIndex2 = fenString.indexOf(' ', charIndex+1);
+		Orion.fiftyMoveCounter = Integer.parseInt(fenString.substring(charIndex, charIndex2));
+		charIndex = charIndex2+1;
+		if (fenString.substring(charIndex).contains(" ")){
+			charIndex2 = fenString.indexOf(' ', charIndex);
+		}
+		else{
+			charIndex2 = fenString.length();
+		}
+		Orion.moveCounter = Integer.parseInt(fenString.substring(charIndex, charIndex2));
+		//The move counter starts at one and increments after blacks first move. So just start at 0 if white hasn't gone yet
+		if ((Orion.moveCounter==1)&&Orion.WhiteToMove){
+			Orion.moveCounter = 0;
+		}
+        String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
+        Orion.HISTORY = new ArrayList<String> ();
+        Orion.HISTORY.add(fenBoard);
+        Orion.ThreeMoveRep = new HashMap<String,Integer> ();
+        Orion.ThreeMoveRep.put(fenBoard, 1);
     }
     
     //Helper Functions
@@ -354,5 +385,398 @@ public class BoardGeneration {
         for (int i=0;i<8;i++) {
             System.out.println(Arrays.toString(chessBoard[i]));
         }
+	}
+
+	public static String makeHistoryFEN(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,int fiftyMoveCounter,int totalMoveCounter){
+		//Examples:
+		// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+		// rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
+		// r1bqkb2/2pp1p1r/p3p2p/1p2n1pn/NPP1PP2/3P4/P1Q1N1PP/R1B1KB1R w KQq - 1 11
+		String fenString = "";
+
+		//trueBoardIndex = (7-boardIndex/8)*8 + boardIndex%8;
+		int emptySquareCounter = 0;
+		for (int boardIndex=0;boardIndex<64;boardIndex++){
+			if ((WP>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'P';
+			}
+			else if ((BP>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'p';
+			}
+			else if ((WN>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'N';
+			}
+			else if ((BN>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'n';
+			}
+			else if ((WB>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'B';
+			}
+			else if ((BB>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'b';
+			}
+			else if ((WR>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'R';
+			}
+			else if ((BR>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'r';
+			}
+			else if ((WQ>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'Q';
+			}
+			else if ((BQ>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'q';
+			}
+			else if ((WK>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'K';
+			}
+			else if ((BK>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'k';
+			}
+			else{
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					if (emptySquareCounter!=0){
+						fenString = fenString + emptySquareCounter + '/';
+						emptySquareCounter = 0;
+					}
+					else{
+						fenString += '/';
+					}
+				}
+				emptySquareCounter++;
+				if (boardIndex==63){
+					fenString+=emptySquareCounter;
+				}
+			}
+		}
+		
+		if (WhiteToMove){
+			fenString +=" w ";
+		}
+		else{
+			fenString +=" b ";
+		}
+		
+		if (!(CWK|CWQ|CBK|CBQ)){
+			fenString += "-";
+		}
+		if (CWK){
+			fenString += "K";
+		}
+		if (CWQ){
+			fenString += "Q";
+		}
+		if (CBK){
+			fenString += "k";
+		}
+		if (CBQ){
+			fenString += "q";
+		}
+		
+		//Commented out En Passant because the engine doesn't consider en passant.
+		/*
+		//En Passant
+		if (EP==0){
+			fenString = fenString + " -";
+		}
+		else{
+			int EPfile = Long.numberOfTrailingZeros(EP);
+			fenString = fenString + (char)('a' + EPfile);
+		}
+		*/
+		//Commented out moves because not relevant
+		//fenString = fenString + " " + fiftyMoveCounter + " " + totalMoveCounter;
+		
+		return fenString;
+	}
+	public static boolean check3FoldRep(String fenBoard){
+		int count = 0;
+		for (int i=0;i<Orion.HISTORY.size();i++){
+			if (Orion.HISTORY.get(i).startsWith(fenBoard)){
+				count++;
+			}
+			if (count >=3){
+				return true;
+			}
+		}
+		return false;
+	}
+	public static String makeFullFEN(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,int fiftyMoveCounter,int totalMoveCounter){
+		//Examples:
+		// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+		// rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
+		// r1bqkb2/2pp1p1r/p3p2p/1p2n1pn/NPP1PP2/3P4/P1Q1N1PP/R1B1KB1R w KQq - 1 11
+		String fenString = "";
+
+		//trueBoardIndex = (7-boardIndex/8)*8 + boardIndex%8;
+		int emptySquareCounter = 0;
+		for (int boardIndex=0;boardIndex<64;boardIndex++){
+			if ((WP>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'P';
+			}
+			else if ((BP>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'p';
+			}
+			else if ((WN>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'N';
+			}
+			else if ((BN>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'n';
+			}
+			else if ((WB>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'B';
+			}
+			else if ((BB>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'b';
+			}
+			else if ((WR>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'R';
+			}
+			else if ((BR>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'r';
+			}
+			else if ((WQ>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'Q';
+			}
+			else if ((BQ>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'q';
+			}
+			else if ((WK>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'K';
+			}
+			else if ((BK>>>((7-boardIndex/8)*8 + boardIndex%8)&1)==1){
+				if (emptySquareCounter!=0){
+					fenString += emptySquareCounter;
+					emptySquareCounter = 0;
+				}
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					fenString += '/';
+				}
+				fenString += 'k';
+			}
+			else{
+				if ((boardIndex%8==0)&&(boardIndex!=0)){
+					if (emptySquareCounter!=0){
+						fenString = fenString + emptySquareCounter + '/';
+						emptySquareCounter = 0;
+					}
+					else{
+						fenString += '/';
+					}
+				}
+				emptySquareCounter++;
+				if (boardIndex==63){
+					fenString+=emptySquareCounter;
+				}
+			}
+		}
+		
+		if (WhiteToMove){
+			fenString +=" w ";
+		}
+		else{
+			fenString +=" b ";
+		}
+		
+		if (!(CWK|CWQ|CBK|CBQ)){
+			fenString += "-";
+		}
+		if (CWK){
+			fenString += "K";
+		}
+		if (CWQ){
+			fenString += "Q";
+		}
+		if (CBK){
+			fenString += "k";
+		}
+		if (CBQ){
+			fenString += "q";
+		}
+		
+		//En Passant
+		if (EP==0){
+			fenString = fenString + " -";
+		}
+		else{
+			int EPfile = Long.numberOfTrailingZeros(EP);
+			fenString = fenString + (char)('a' + EPfile);
+		}
+		fenString = fenString + " " + fiftyMoveCounter + " " + totalMoveCounter;
+		
+		return fenString;
+		
+	}
+	public static void addToHistory(){
+        String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
+        Orion.HISTORY.add(fenBoard);
+        if (Orion.ThreeMoveRep.containsKey(fenBoard)){
+        	Orion.ThreeMoveRep.put(fenBoard, Orion.ThreeMoveRep.get(fenBoard)+1);
+        }
+        else{
+        	Orion.ThreeMoveRep.put(fenBoard, 1);
+        }
+        
 	}
 }

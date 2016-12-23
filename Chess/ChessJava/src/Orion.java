@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 public class Orion {
@@ -6,13 +8,17 @@ public class Orion {
     //Castling Rights and whose turn it is
     static boolean CWK=true,CWQ=true,CBK=true,CBQ=true,WhiteToMove=true;//true=castle is possible
     //???
+    /*
     static long UniversalWP=0L,UniversalWN=0L,UniversalWB=0L,UniversalWR=0L,
             UniversalWQ=0L,UniversalWK=0L,UniversalBP=0L,UniversalBN=0L,
             UniversalBB=0L,UniversalBR=0L,UniversalBQ=0L,UniversalBK=0L,
             UniversalEP=0L;
+    */
     //Other Needed Constants
-    static int searchDepth=4,moveCounter;
+    static int searchDepth=4,moveCounter=0,fiftyMoveCounter=0,nodesSearchedCounter=0;
     static int MATE_SCORE=50000,NULL_INT=Integer.MIN_VALUE;
+    static ArrayList<String> HISTORY = new ArrayList<String> ();
+    static HashMap<String,Integer> ThreeMoveRep = new HashMap<String,Integer>();
     public static void main(String[] args) {
         //Zobrist.zobristFillArray();
         //BoardGeneration.importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -31,12 +37,13 @@ public class Orion {
     	//Mate in 3?
     	//BoardGeneration.importFEN("rnbk1Q2/8/4p3/pBB1Np2/P7/2P5/5PPP/R4K1R b - - 0 28");
     	
-    	
+    	//Test, don't take the pawn.
         //BoardGeneration.importFEN("r1bqkbnr/ppppppp1/2n5/7p/8/P3P1P1/1PPP1P1P/RNBQKBNR w KQkq - 0 4");
         //BoardGeneration.importFEN("rnbqkbnr/1ppp1p1p/p3p1p1/8/7P/2N5/PPPPPPP1/R1BQKBNR b KQkq - 0 1");
         //UCI.inputPrint();
-    	
-    	
+    	 
+    	//BoardGeneration.importFEN("4k2R/r4pp1/nppbp1p1/p2p4/P2Pn1r1/1NP1PN2/1P1B1PP1/R3K3 b Q - 5 21");
+    	//UCI.inputPrint();
         //long startTime = System.currentTimeMillis();
         //System.out.println(PrincipalVariation.pvSearch(-1000,1000,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,!WhiteToMove,0));
         //System.out.println("Searched "+moveCounter+" moves");

@@ -305,6 +305,7 @@ public class Strategies {
         /*
          * Uses principal variation with random rating.
          */
+		long startTime = System.currentTimeMillis();
 		int bestScore = Integer.MIN_VALUE;
         String bestMove = "";
         int start=0,end=0;
@@ -355,8 +356,17 @@ public class Strategies {
             BKt=Moves.makeMove(Orion.BK, moves.substring(i,i+4), 'k');
             WRt=Moves.makeMoveCastle(WRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'R');
             BRt=Moves.makeMoveCastle(BRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'r');
+            int numPiecesBefore = Rating.bitCount(Orion.WP|Orion.WN|Orion.WB|Orion.WR|Orion.WQ|Orion.WK|Orion.BP|Orion.BN|Orion.BB|Orion.BR|Orion.BQ|Orion.BK);
+            int numPiecesAfter = Rating.bitCount(WPt|WNt|WBt|WRt|WQt|WKt|BPt|BNt|BBt|BRt|BQt|BKt);
+            int fiftyMoveCountert;
+            if ((numPiecesBefore==numPiecesAfter)&&(Orion.WP==WPt)&&(Orion.BP==BPt)){
+            	fiftyMoveCountert = Orion.fiftyMoveCounter+1;
+            }
+            else{
+            	fiftyMoveCountert = 0;
+            }
             //Score the move
-            int scoreOfMove = -PrincipalVariation.pvSearch2(-100000,100000,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!Orion.WhiteToMove,1,Orion.WhiteToMove);
+            int scoreOfMove = -PrincipalVariation.pvSearch2(-100000,100000,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!Orion.WhiteToMove,1,Orion.WhiteToMove,fiftyMoveCountert,Orion.moveCounter+1);
             //System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4))+" had a score of :"+scoreOfMove);
             if (scoreOfMove>bestScore){
             	bestScore = scoreOfMove;
@@ -366,9 +376,12 @@ public class Strategies {
             	bestMove = bestMove.concat(moves.substring(i,i+4));
             }
         }
+        long endTime = System.currentTimeMillis();
+        long timeSpent = Math.max(1, (endTime-startTime)/1000);
+        long nps = Orion.nodesSearchedCounter/(timeSpent);
         //Choose randomly from the best moves
 		int index=(int)(Math.floor(Math.random()*(bestMove.length()/4))*4);
-		System.out.println("info score cp "+bestScore);
+		System.out.println("info score cp "+bestScore+" nodes "+Orion.nodesSearchedCounter +" nps "+nps);
 		return bestMove.substring(index,index+4);
 	}
 	
@@ -481,8 +494,9 @@ public class Strategies {
 
 	public static String Strategy8(String moves){
         /*
-         * Uses principal variation with random rating.
+         * Uses principal variation.
          */
+		long startTime = System.currentTimeMillis();
 		int bestScore = Integer.MIN_VALUE;
         String bestMove = "";
         int start=0,end=0;
@@ -533,8 +547,17 @@ public class Strategies {
             BKt=Moves.makeMove(Orion.BK, moves.substring(i,i+4), 'k');
             WRt=Moves.makeMoveCastle(WRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'R');
             BRt=Moves.makeMoveCastle(BRt, Orion.WK|Orion.BK, moves.substring(i,i+4), 'r');
+            int numPiecesBefore = Rating.bitCount(Orion.WP|Orion.WN|Orion.WB|Orion.WR|Orion.WQ|Orion.WK|Orion.BP|Orion.BN|Orion.BB|Orion.BR|Orion.BQ|Orion.BK);
+            int numPiecesAfter = Rating.bitCount(WPt|WNt|WBt|WRt|WQt|WKt|BPt|BNt|BBt|BRt|BQt|BKt);
+            int fiftyMoveCountert;
+            if ((numPiecesBefore==numPiecesAfter)&&(Orion.WP==WPt)&&(Orion.BP==BPt)){
+            	fiftyMoveCountert = Orion.fiftyMoveCounter+1;
+            }
+            else{
+            	fiftyMoveCountert = 0;
+            }
             //Score the move
-            int scoreOfMove = -PrincipalVariation.pvSearch3(-100000,100000,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!Orion.WhiteToMove,1,Orion.WhiteToMove);
+            int scoreOfMove = -PrincipalVariation.pvSearch3(-100000,100000,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!Orion.WhiteToMove,1,Orion.WhiteToMove,fiftyMoveCountert,Orion.moveCounter+1);
             //System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4))+"* had a score of :"+scoreOfMove);
             if (scoreOfMove>bestScore){
             	bestScore = scoreOfMove;
@@ -544,9 +567,21 @@ public class Strategies {
             	bestMove = bestMove.concat(moves.substring(i,i+4));
             }
         }
+        long endTime = System.currentTimeMillis();
+        long timeSpent = Math.max(1, (endTime-startTime)/1000);
+        long nps = Orion.nodesSearchedCounter/(timeSpent);
         //Choose randomly from the best moves
 		int index=(int)(Math.floor(Math.random()*(bestMove.length()/4))*4);
-		System.out.println("info score cp "+bestScore);
+		String infoString = "info depth "+Orion.searchDepth;
+		infoString  = infoString +" time " + (endTime-startTime) + " score cp "+bestScore;
+		if (Math.abs(Math.abs(bestScore)-Orion.MATE_SCORE)<=Orion.searchDepth){
+			int myInt = (bestScore>0) ? 1 : -1;
+			int mateMoves = myInt*(1+Orion.MATE_SCORE-Math.abs(bestScore))/2;
+			infoString  = infoString +" mate "+ mateMoves;
+		}
+		infoString  = infoString +" nodes "+Orion.nodesSearchedCounter+" nps "+nps;
+		
+		System.out.println(infoString);
 		return bestMove.substring(index,index+4);
 	}
 	

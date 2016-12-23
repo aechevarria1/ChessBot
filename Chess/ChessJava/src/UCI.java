@@ -72,8 +72,12 @@ public class UCI {
             input=input.substring(input.indexOf("moves")+6);
             while (input.length()>2)//Used two instead of 0 in case we end with a single space at the end
             {
+            	if(Orion.WhiteToMove){
+            		Orion.moveCounter++;
+            	}
                 algebraToMove(input);
                 input=input.substring(input.indexOf(' ')+1);
+                BoardGeneration.addToHistory();
                 
             }
         }
@@ -126,6 +130,9 @@ public class UCI {
                     if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<63))!=0) {Orion.CBK=false;}
                     if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<56))!=0) {Orion.CBQ=false;}
                     
+                    int numPiecesBefore = Rating.bitCount(Orion.WP|Orion.WN|Orion.WB|Orion.WR|Orion.WQ|Orion.WK|Orion.BP|Orion.BN|Orion.BB|Orion.BR|Orion.BQ|Orion.BK);
+                    long WPBefore = Orion.WP;
+                    long BPBefore = Orion.BP;
                     //Do the moves
                     Orion.EP=Moves.makeMoveEP(Orion.WP|Orion.BP,moves.substring(i,i+4));
                     Orion.WR=Moves.makeMoveCastle(Orion.WR, Orion.WK|Orion.BK, moves.substring(i,i+4), 'R');
@@ -143,6 +150,14 @@ public class UCI {
                     Orion.BQ=Moves.makeMove(Orion.BQ, moves.substring(i,i+4), 'q');
                     Orion.BK=Moves.makeMove(Orion.BK, moves.substring(i,i+4), 'k');
                     Orion.WhiteToMove=!Orion.WhiteToMove;
+                    
+                    int numPiecesAfter = Rating.bitCount(Orion.WP|Orion.WN|Orion.WB|Orion.WR|Orion.WQ|Orion.WK|Orion.BP|Orion.BN|Orion.BB|Orion.BR|Orion.BQ|Orion.BK);
+                    if ((numPiecesBefore==numPiecesAfter)&&(Orion.WP==WPBefore)&&(Orion.BP==BPBefore)){
+                    	Orion.fiftyMoveCounter++;
+                    }
+                    else{
+                    	Orion.fiftyMoveCounter = 0;
+                    }
                     break;
                 }
             }
@@ -155,6 +170,7 @@ public class UCI {
             Orion.searchDepth = Integer.parseInt(input.substring(0,input.indexOf(' ')));
         }
         //Search for the best move
+        Orion.nodesSearchedCounter=0;
         String move;
         if (Orion.WhiteToMove) {
             move=Moves.possibleMovesW(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ);
@@ -165,6 +181,10 @@ public class UCI {
         move = Moves.filterMoves(move,Orion.WhiteToMove,Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP);
         //Select a random move for now.
         String bestMove = Strategies.Strategy8(move);
+        //Hopefully this will speed things up and take less computer memory.
+        Orion.HISTORY = new ArrayList<String> ();
+        Orion.ThreeMoveRep = new HashMap<String,Integer>();
+        System.gc();
         System.out.println("bestmove "+moveToAlgebra(bestMove));
     }
     public static String moveToAlgebra(String move) {
@@ -210,6 +230,8 @@ public class UCI {
     }
     public static void inputPrint() {
         BoardGeneration.drawArray(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK);
+        String fenBoard = BoardGeneration.makeFullFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
+        System.out.println(fenBoard);
         //System.out.print("Zobrist Hash: ");
         //System.out.println(Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove));
     }

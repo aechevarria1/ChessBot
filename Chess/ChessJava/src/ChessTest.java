@@ -10,7 +10,7 @@ public class ChessTest {
 		
 	}
 	// Tests
-	
+	/*
 	@Test
 	public void testMoves1() {
 		String fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -35,7 +35,7 @@ public class ChessTest {
 		Perft.perftRoot(Orion.WP, Orion.WN, Orion.WB, Orion.WR, Orion.WQ, Orion.WK, Orion.BP, Orion.BN, Orion.BB, Orion.BR, Orion.BQ, Orion.BK, Orion.EP, Orion.CWK, Orion.CWQ, Orion.CBK, Orion.CBQ, Orion.WhiteToMove, 0,false);
 		assert(Perft.perftTotalMoveCounter==178633661);
 	}
-	/*
+	
 	@Test
 	public void testMoves4() {
 		String fenString = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
@@ -45,7 +45,7 @@ public class ChessTest {
 		assert(Perft.perftTotalMoveCounter==706045033);
 	}
 	
-	*/
+	
 	@Test
 	public void testMoves5() {
 		String fenString = "1k6/1b6/8/8/7R/8/8/4K2R b K - 0 1";
@@ -179,5 +179,48 @@ public class ChessTest {
 		Perft.perftRoot(Orion.WP, Orion.WN, Orion.WB, Orion.WR, Orion.WQ, Orion.WK, Orion.BP, Orion.BN, Orion.BB, Orion.BR, Orion.BQ, Orion.BK, Orion.EP, Orion.CWK, Orion.CWQ, Orion.CBK, Orion.CBQ, Orion.WhiteToMove, 0,false);
 		assert(Perft.perftTotalMoveCounter==2874505);
 	}
-	
+	*/
+	//Testing fen generation
+	@Test
+	public void testMoves21() {
+		String fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+		BoardGeneration.importFEN(fenString);
+		String output = BoardGeneration.makeHistoryFEN(Orion.WP, Orion.WN, Orion.WB, Orion.WR, Orion.WQ, Orion.WK, Orion.BP, Orion.BN, Orion.BB, Orion.BR, Orion.BQ, Orion.BK, Orion.EP, Orion.CWK, Orion.CWQ, Orion.CBK, Orion.CBQ, Orion.WhiteToMove, Orion.fiftyMoveCounter, Orion.moveCounter);
+		assert(fenString.startsWith(output));
+	}
+	@Test
+	public void testMoves22() {
+		String fenString = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
+		BoardGeneration.importFEN(fenString);
+		String output = BoardGeneration.makeHistoryFEN(Orion.WP, Orion.WN, Orion.WB, Orion.WR, Orion.WQ, Orion.WK, Orion.BP, Orion.BN, Orion.BB, Orion.BR, Orion.BQ, Orion.BK, Orion.EP, Orion.CWK, Orion.CWQ, Orion.CBK, Orion.CBQ, Orion.WhiteToMove, Orion.fiftyMoveCounter, Orion.moveCounter);
+		assert(fenString.startsWith(output));
+	}
+	@Test
+	public void testMoves23() {
+		String fenString = "r1bqkb2/2pp1p1r/p3p2p/1p2n1pn/NPP1PP2/3P4/P1Q1N1PP/R1B1KB1R w KQq - 1 11";
+		BoardGeneration.importFEN(fenString);
+		String output = BoardGeneration.makeHistoryFEN(Orion.WP, Orion.WN, Orion.WB, Orion.WR, Orion.WQ, Orion.WK, Orion.BP, Orion.BN, Orion.BB, Orion.BR, Orion.BQ, Orion.BK, Orion.EP, Orion.CWK, Orion.CWQ, Orion.CBK, Orion.CBQ, Orion.WhiteToMove, Orion.fiftyMoveCounter, Orion.moveCounter);
+		assert(fenString.startsWith(output));
+	}
+	@Test
+	public void testMoves24() {
+		String fenString = "8/6k1/8/8/8/8/3q1bp1/K7 b - - 2 1";
+		BoardGeneration.importFEN(fenString);
+		String output = BoardGeneration.makeHistoryFEN(Orion.WP, Orion.WN, Orion.WB, Orion.WR, Orion.WQ, Orion.WK, Orion.BP, Orion.BN, Orion.BB, Orion.BR, Orion.BQ, Orion.BK, Orion.EP, Orion.CWK, Orion.CWQ, Orion.CBK, Orion.CBQ, Orion.WhiteToMove, Orion.fiftyMoveCounter, Orion.moveCounter);
+		assert(fenString.startsWith(output));
+	}
+	@Test
+	public void testMoves25() {
+		String fenString = "k7/3Q1BP1/8/8/8/8/6K1/8 w - - 2 1";
+		BoardGeneration.importFEN(fenString);
+		String output = BoardGeneration.makeHistoryFEN(Orion.WP, Orion.WN, Orion.WB, Orion.WR, Orion.WQ, Orion.WK, Orion.BP, Orion.BN, Orion.BB, Orion.BR, Orion.BQ, Orion.BK, Orion.EP, Orion.CWK, Orion.CWQ, Orion.CBK, Orion.CBQ, Orion.WhiteToMove, Orion.fiftyMoveCounter, Orion.moveCounter);
+		assert(fenString.startsWith(output));
+	}
+	@Test
+	public void testMoves26() {
+		String fenString = "rnbk1Q2/8/4p3/pBB1Np2/P7/2P5/5PPP/R4K1R b - - 0 28";
+		BoardGeneration.importFEN(fenString);
+		String output = BoardGeneration.makeHistoryFEN(Orion.WP, Orion.WN, Orion.WB, Orion.WR, Orion.WQ, Orion.WK, Orion.BP, Orion.BN, Orion.BB, Orion.BR, Orion.BQ, Orion.BK, Orion.EP, Orion.CWK, Orion.CWQ, Orion.CBK, Orion.CBQ, Orion.WhiteToMove, Orion.fiftyMoveCounter, Orion.moveCounter);
+		assert(fenString.startsWith(output));
+	}
 }
