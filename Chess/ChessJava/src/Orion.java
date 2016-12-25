@@ -17,14 +17,15 @@ public class Orion {
     //Other Needed Constants
     static int searchDepth=4,moveCounter=0,fiftyMoveCounter=0,nodesSearchedCounter=0;
     static int MATE_SCORE=50000,NULL_INT=Integer.MIN_VALUE;
-    static ArrayList<String> HISTORY = new ArrayList<String> ();
+    //static ArrayList<String> HISTORY = new ArrayList<String> ();
     static HashMap<String,Integer> ThreeMoveRep = new HashMap<String,Integer>();
+    static HashMap<Long,Integer> ThreeMoveRepCheck = new HashMap<Long,Integer>();
     public static void main(String[] args) {
         //Zobrist.zobristFillArray();
-        //BoardGeneration.importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        //BoardGeneration.importFEN("");
         //UCI.inputPrint();
     	//Test take piece (best move f4e5)
-        //BoardGeneration.importFEN("r1bqkb2/2pp1p1r/p3p2p/1p2n1pn/NPP1PP2/3P4/P1Q1N1PP/R1B1KB1R w KQq - 1 11 ");
+        //BoardGeneration.importFEN("r1bqkb2/2pp1p1r/p3p2p/1p2n1pn/NPP1PP2/3P4/P1Q1N1PP/R1B1KB1R w KQq - 1 11");
         //UCI.inputPrint();
     	//Test Avoid Stalemate and black can checkmate (do not d2c2)
         //BoardGeneration.importFEN("8/6k1/8/8/8/8/3q1bp1/K7 b - - 2 1");
@@ -49,6 +50,13 @@ public class Orion {
         //System.out.println("Searched "+moveCounter+" moves");
         //long endTime = System.currentTimeMillis();
         //System.out.println("That took " + (endTime - startTime) + " milliseconds");
+    	
+    	//String inputString = "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    	//UCI.inputIsReady();
+    	//UCI.inputPosition(inputString);
+    	//UCI.inputPrint();
+    	//UCI.inputGo("go");
+    	
         UCI.uciCommunication();
     }
 }

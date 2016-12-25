@@ -52,7 +52,7 @@ public class UCI {
     }
     public static void inputIsReady() {
     	//TODO implement the Zorbist and TranspositionTable in principle variation
-    	//Zobrist.zobristFillArray();
+    	Zobrist.zobristFillArray();
     	System.out.println("readyok");
     }
     public static void inputUCINewGame() {
@@ -80,6 +80,9 @@ public class UCI {
                 BoardGeneration.addToHistory();
                 
             }
+            //Remove the last board because it is added during the move search process
+            Long boardHash = Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove);
+            Orion.ThreeMoveRepCheck.put(boardHash, Orion.ThreeMoveRepCheck.get(boardHash)-1);
         }
     }
     public static void algebraToMove(String input) {
@@ -171,6 +174,7 @@ public class UCI {
         }
         //Search for the best move
         Orion.nodesSearchedCounter=0;
+        /*
         String move;
         if (Orion.WhiteToMove) {
             move=Moves.possibleMovesW(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ);
@@ -181,11 +185,9 @@ public class UCI {
         move = Moves.filterMoves(move,Orion.WhiteToMove,Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP);
         //Select a random move for now.
         String bestMove = Strategies.Strategy8(move);
-        //Hopefully this will speed things up and take less computer memory.
-        Orion.HISTORY = new ArrayList<String> ();
-        Orion.ThreeMoveRep = new HashMap<String,Integer>();
-        System.gc();
         System.out.println("bestmove "+moveToAlgebra(bestMove));
+        */
+        Strategies.Strategy9();
     }
     public static String moveToAlgebra(String move) {
         String returnMove="";
@@ -232,7 +234,7 @@ public class UCI {
         BoardGeneration.drawArray(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK);
         String fenBoard = BoardGeneration.makeFullFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
         System.out.println(fenBoard);
-        //System.out.print("Zobrist Hash: ");
-        //System.out.println(Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove));
+        System.out.print("Zobrist Hash: ");
+        System.out.println(Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove));
     }
 }

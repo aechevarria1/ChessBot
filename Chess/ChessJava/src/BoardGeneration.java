@@ -86,10 +86,13 @@ public class BoardGeneration {
                 {"R","Q","Q","Q","K","B","N","R"}};
         arrayToBitboards(chessBoard,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
         String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
-        Orion.HISTORY = new ArrayList<String> ();
-        Orion.HISTORY.add(fenBoard);
+        //Orion.HISTORY = new ArrayList<String> ();
+        //Orion.HISTORY.add(fenBoard);
         Orion.ThreeMoveRep = new HashMap<String,Integer> ();
         Orion.ThreeMoveRep.put(fenBoard, 1);
+        long boardHash = Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove);
+        Orion.ThreeMoveRepCheck = new HashMap<Long,Integer> ();
+        Orion.ThreeMoveRepCheck.put(boardHash, 1);
     }
     public static void initiateStandardChess() {
         long WP=0L,WN=0L,WB=0L,WR=0L,WQ=0L,WK=0L,BP=0L,BN=0L,BB=0L,BR=0L,BQ=0L,BK=0L;
@@ -104,10 +107,13 @@ public class BoardGeneration {
                 {"R","N","B","Q","K","B","N","R"}};
         arrayToBitboards(chessBoard,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
         String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
-        Orion.HISTORY = new ArrayList<String> ();
-        Orion.HISTORY.add(fenBoard);
+        //Orion.HISTORY = new ArrayList<String> ();
+        //Orion.HISTORY.add(fenBoard);
         Orion.ThreeMoveRep = new HashMap<String,Integer> ();
         Orion.ThreeMoveRep.put(fenBoard, 1);
+        long boardHash = Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove);
+        Orion.ThreeMoveRepCheck = new HashMap<Long,Integer> ();
+        Orion.ThreeMoveRepCheck.put(boardHash, 1);
     }
     public static void initiateChess960() {
     	long WP=0L,WN=0L,WB=0L,WR=0L,WQ=0L,WK=0L,BP=0L,BN=0L,BB=0L,BR=0L,BQ=0L,BK=0L;
@@ -176,10 +182,13 @@ public class BoardGeneration {
         chessBoard[7][counter]="R";
         arrayToBitboards(chessBoard,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK);
         String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
-        Orion.HISTORY = new ArrayList<String> ();
-        Orion.HISTORY.add(fenBoard);
+        //Orion.HISTORY = new ArrayList<String> ();
+        //Orion.HISTORY.add(fenBoard);
         Orion.ThreeMoveRep = new HashMap<String,Integer> ();
         Orion.ThreeMoveRep.put(fenBoard, 1);
+        long boardHash = Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove);
+        Orion.ThreeMoveRepCheck = new HashMap<Long,Integer> ();
+        Orion.ThreeMoveRepCheck.put(boardHash, 1);
     }
     
     public static void importFEN(String fenString){
@@ -310,10 +319,13 @@ public class BoardGeneration {
 			Orion.moveCounter = 0;
 		}
         String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
-        Orion.HISTORY = new ArrayList<String> ();
-        Orion.HISTORY.add(fenBoard);
+        //Orion.HISTORY = new ArrayList<String> ();
+        //Orion.HISTORY.add(fenBoard);
         Orion.ThreeMoveRep = new HashMap<String,Integer> ();
         Orion.ThreeMoveRep.put(fenBoard, 1);
+        long boardHash = Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove);
+        Orion.ThreeMoveRepCheck = new HashMap<Long,Integer> ();
+        Orion.ThreeMoveRepCheck.put(boardHash, 1);
     }
     
     //Helper Functions
@@ -573,6 +585,7 @@ public class BoardGeneration {
 		
 		return fenString;
 	}
+	/*
 	public static boolean check3FoldRep(String fenBoard){
 		int count = 0;
 		for (int i=0;i<Orion.HISTORY.size();i++){
@@ -584,7 +597,7 @@ public class BoardGeneration {
 			}
 		}
 		return false;
-	}
+	}*/
 	public static String makeFullFEN(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,int fiftyMoveCounter,int totalMoveCounter){
 		//Examples:
 		// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
@@ -769,13 +782,22 @@ public class BoardGeneration {
 		
 	}
 	public static void addToHistory(){
-        String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
+        /*
+		String fenBoard = makeHistoryFEN(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
         Orion.HISTORY.add(fenBoard);
         if (Orion.ThreeMoveRep.containsKey(fenBoard)){
         	Orion.ThreeMoveRep.put(fenBoard, Orion.ThreeMoveRep.get(fenBoard)+1);
         }
         else{
         	Orion.ThreeMoveRep.put(fenBoard, 1);
+        }
+        */
+		Long boardHash = Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove);
+        if (Orion.ThreeMoveRepCheck.containsKey(boardHash)){
+        	Orion.ThreeMoveRepCheck.put(boardHash, Orion.ThreeMoveRepCheck.get(boardHash)+1);
+        }
+        else{
+        	Orion.ThreeMoveRepCheck.put(boardHash, 1);
         }
         
 	}

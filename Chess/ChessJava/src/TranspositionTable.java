@@ -3,31 +3,31 @@ import java.util.HashSet;
 
 public class TranspositionTable {
 	public static HashSet<Long> allKeys = new HashSet<Long>();
-	public static HashMap<Long,String> bestMoveMap = new HashMap<Long,String>();
-	public static HashMap<Long,Integer> evaluationMap = new HashMap<Long,Integer>();
-	public static HashMap<Long,Integer> alphaMap = new HashMap<Long,Integer>();
-	public static HashMap<Long,Integer> betaMap = new HashMap<Long,Integer>();
+
+	public static HashMap<Long,HashMap> transpositionTable = new HashMap<Long,HashMap>();
 	
-	public static void addValue(long key,String bestMove,int score,int alpha,int beta){
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static void addValue(long key,int depth,String flag,int value){
 		allKeys.add(key);
-		bestMoveMap.put(key, bestMove);
-		evaluationMap.put(key,score);
-		alphaMap.put(key, alpha);
-		betaMap.put(key, beta);
+		HashMap info = new HashMap();
+		info.put("FLAG", flag);
+		info.put("VALUE", value);
+		info.put("DEPTH", depth);
+		transpositionTable.put(key, info);
 	}
+	
 	public static boolean contains(long key){
 		return allKeys.contains(key);
 	}
-	public static String getBestMove(long key){
-		return bestMoveMap.get(key);
+	public static int getValue(long key){
+		return (int) transpositionTable.get(key).get("VALUE");
 	}
-	public static int getEvaluation(long key){
-		return evaluationMap.get(key);
+	public static String getFlag(long key){
+		return (String) transpositionTable.get(key).get("FLAG");
 	}
-	public static int getAlpha(long key){
-		return alphaMap.get(key);
+	public static int getDepth(long key){
+		return (int) transpositionTable.get(key).get("DEPTH");
 	}
-	public static int getBeta(long key){
-		return betaMap.get(key);
-	}
+
 }
