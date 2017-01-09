@@ -593,18 +593,22 @@ public class Strategies {
 		long startTime = System.currentTimeMillis();
 		
 		int bestScore = PrincipalVariation.pvSearch5(-100000,100000,Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove,Orion.searchDepth,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
+		//int bestScore = PrincipalVariation.pvSearch6(-100000,100000,Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteHasCastled,Orion.BlackHasCastled,Orion.WhiteToMove,Orion.searchDepth,Orion.WhiteToMove,Orion.fiftyMoveCounter,Orion.moveCounter);
         
 		long endTime = System.currentTimeMillis();
         long timeSpent = Math.max((endTime-startTime), 1);
         long nps = 1000*Orion.nodesSearchedCounter/timeSpent;
         //Choose randomly from the best moves
-		
+		System.out.println("bestScore:"+bestScore);
 		String infoString = "info depth "+Orion.searchDepth;
-		infoString  = infoString +" time " + (endTime-startTime) + " score cp "+bestScore;
+		infoString  = infoString +" time " + (endTime-startTime) + " score";
 		if (Math.abs(Math.abs(bestScore)-Orion.MATE_SCORE)<=Orion.searchDepth){
 			int myInt = (bestScore>0) ? 1 : -1;
 			int mateMoves = myInt*(1+(Orion.searchDepth - Math.abs(Orion.MATE_SCORE-Math.abs(bestScore))))/2;
 			infoString  = infoString +" mate "+ mateMoves;
+		}
+		else{
+			 infoString = infoString + " cp "+bestScore;
 		}
 		infoString  = infoString +" nodes "+Orion.nodesSearchedCounter+" nps "+nps;
 		

@@ -1,3 +1,9 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -288,13 +294,58 @@ public class Scratchwork {
 		System.out.println(Math.random());
 		Zobrist.testDistribution();
 		*/
-		int[] x = new int[5];
-		System.out.println(x);
-		System.out.println(x[1]);
-		String[] y = new String[5];
-		System.out.println(y);
-		System.out.println(y[1]==null);
-		System.out.println(Integer.parseInt("4"));
+		/*
+		String moveList = "1.c4 g6 2.d4 Bg7 3.Nc3 d6 4.e4 Nf6 5.f3 O-O 6.Be3 e5 7.Nge2 c6 8.d5 cxd5 "
+				+ "9.cxd5 a6 10.Qd2 Nbd7 11.Nc1 Nh5 12.Nd3 f5 13.O-O-O Nb6 14.Nb4 Bd7 15.Kb1 Rc8 "
+				+ "16.Qf2 Na4 17.Nxa4 Bxa4 18.b3 Bd7 19.Bb6 Qe8 20.Qd2 fxe4 21.fxe4 Bb5 22.Nd3 Nf6 "
+				+ "23.Qb4 Qe7 24.Nb2 Bh6 25.Bxb5 axb5 26.Rhe1 Qd7 27.h3 Ne8 28.Nd3 Nc7 29.Be3 Bxe3 "
+				+ "30.Rxe3 Na6 31.Qd2 Nc5  1/2-1/2";
+		Orion.HISTORY2 = new ArrayList<Long[]>();
+		BoardGeneration.importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		Orion.HISTORY2.add(BoardGeneration.getBoardInformation());
+		BoardGeneration.parseMoveList(moveList);
+		*/
+		/*
+		int count =0;
+		Path fileLoc = Paths.get("C:\\Users\\arinz\\Desktop\\ChessNotes\\smallPracticeSet.pgn");
+		//Path fileLoc = Paths.get("C:/Users/arinz/OneDrive/Documents/GitHub/ChessBot/Chess/New/Modern/Modern.pgn");
+		String data ="";
+		Charset charset = Charset.forName("US-ASCII");
+		try (BufferedReader reader = Files.newBufferedReader(fileLoc, charset)) {
+		    String line = null;
+		    while (((line = reader.readLine()) != null)&&(count<=20)) {
+		        System.out.println(line);
+		        
+		        data += " "+line;
+		    }
+		} catch (IOException x) {
+		    System.err.format("IOException: %s%n", x);
+		}
+		System.out.println(data);
+		System.out.println(data.substring(data.indexOf("1."), data.indexOf("[", data.indexOf("1."))));
+		*/
+		double [][] x = new double[5][5];
+		x[1][4] = 3;
+		for (int i=0;i<5;i++){
+			System.out.println(Arrays.toString(x[i]));
+		}
+		String myString = "3.5130668e+00   2.8033160e+00  -1.0957304e+00   7.4403603e-01   7.0291312e-02  -8.2969735e-01   1.3404502e+00  -7.1290354e-01   1.4903272e-01   7.5476133e-01  -1.7062872e+00   1.3661470e+00   4.2599127e+00  -2.6305152e-02   4.1120264e-01  -5.1173689e-02  -8.4546847e-01   1.1441765e-02";
+		String[] y = new String[18];
+		double[] z = new double[18];
+		y = myString.split("\\s+");
+		for (int i=0;i<18;i++){
+			z[i] = Double.parseDouble(y[i]);
+		}
+		System.out.println(Arrays.toString(y));
+		System.out.println(Arrays.toString(z));
+		
+		System.out.println("Weights 1");
+		//System.out.println(NeuralNetwork.weights1);
+		System.out.println("Weights 2");
+		//System.out.println(NeuralNetwork.weights2);
+		NeuralNetwork.loadWeights();
+
 	}
 	
+
 }

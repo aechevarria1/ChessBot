@@ -6,13 +6,324 @@ import java.util.List;
 public class BoardGeneration {
 
 	//Board Instantiation
-	public static void initiateLoadedGame(String directory, String infoType){
+	@SuppressWarnings("rawtypes")
+	public static void loadGamePGN(String moveInformation){
 		//To load a chess game.
-		//TODO
+		importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		parseMoveList(moveInformation);
 	}
 
-	public static long[] getBoardInformation(){
-		long[] boardInformation = new long[] {Orion.WK,Orion.WQ,Orion.WB,Orion.WN,Orion.WR,Orion.WP,Orion.BK,Orion.BQ,Orion.BB,Orion.BN,Orion.BR,Orion.BP};
+	public static void parseMoveList(String moveList){
+		//System.out.println(moveList);
+		//System.out.println();
+		//Find index of "1/2-1/2" or "1-0" or "0-1" and cut off string there leaving one space at the end
+		if (moveList.indexOf(" 1-0")!=-1){
+			//White
+			moveList = moveList.substring(0, moveList.indexOf(" 1-0"));
+		}
+		else if(moveList.indexOf(" 0-1")!=-1){
+			//Black wins
+			moveList = moveList.substring(0, moveList.indexOf(" 0-1"));
+		}
+		else{
+			//Draw
+			moveList = moveList.substring(0, moveList.indexOf(" 1/2-1/2"));
+		}
+		//System.out.println(moveList);
+		//System.out.println();
+		//Strip out all the numbers
+		int moveCount = 1;
+		String moveCountString = "1.";
+		while (moveList.indexOf(moveCountString)!=-1){
+			int index1 = moveList.indexOf(moveCountString);
+			int index2 = moveList.indexOf(".", index1);
+			moveList = moveList.substring(0, index1) + moveList.substring(index2+1); 
+			moveCount++;
+			moveCountString = moveCount + ".";
+		}
+		//System.out.println(moveList);
+		//System.out.println();
+		
+		//Remove checks and captures
+		moveList = moveList.replace("+", "");
+		moveList = moveList.replace("x", "");
+		
+		//System.out.println(moveList);
+		//System.out.println();
+		
+		int nextSpace;
+		String move;
+		String coordinateMove;
+		while(moveList.length()>1){
+			nextSpace = moveList.indexOf(' ');
+			move = moveList.substring(0,nextSpace);
+			moveList = moveList.substring(nextSpace+1);
+			//System.out.println(move);
+			//Castling "O-O-O" "O-O"
+			if(move.equals("O-O-O")||move.equals("O-O")){
+				String x1="4",y1,x2,y2;
+				if(move.equals("O-O-O")){x2 = "2";}else{x2 = "6";}
+				if(Orion.WhiteToMove){y1 = "0";y2="0";Orion.WhiteHasCastled=true;}else{y1 = "7";y2="7";Orion.BlackHasCastled=true;}
+				coordinateMove = x1+y1+x2+y2;
+			}
+			//Pawn Promotion "a8=Q+" "gxh1=Q+" "a1=Q" "dxe8=Q"--> "a8=Q" "gh1=Q" "a1=Q" "de8=Q"
+			else if(move.contains("=")){
+				String frontHalf;
+				if(move.length()==4){
+					//Capture
+					frontHalf = (char)('0'+move.charAt(0)-'a') +""+ (char)('0'+move.charAt(0)-'a');
+				}
+				else{
+					//Move Forward
+					frontHalf = (char)('0'+move.charAt(0)-'a') +""+ (char)('0'+move.charAt(1)-'a');
+				}
+				char selectedTransformation = move.charAt(move.length()-1);
+				if (!Orion.WhiteToMove){selectedTransformation = Character.toLowerCase(selectedTransformation);}
+				String backHalf = selectedTransformation+"P";
+				coordinateMove = frontHalf+backHalf;
+			}
+			//Regular moves
+			//(only end square given) "Na6" "g6" "Rxc7+" --> "Na6" "g6" "Rc7"
+			//(start file given) "Rhe1" "cxd5" "Nge2" --> "Rhe1" "cd5" "Nge2"
+			//(start rank given) "R1h5" "R1e7+" -- > "R1h5" "R1e7"
+			//(start square given) "Rh1h5" just in case
+			else{
+				String frontHalf;
+				String backHalf = ""+(char)('0'+move.charAt(move.length()-2)-'a') + (char)('0'+move.charAt(move.length()-1)-'1');
+				if(Character.isUpperCase(move.charAt(0))){
+					//Back row piece movement
+					if (move.length()==5){
+						//rank and file specified
+						frontHalf = ""+(char)(move.charAt('0'+move.length()-4)-'a') + (char)('0'+move.charAt(move.length()-3)-'1');
+					}
+					else{
+						long backRow;
+						if (Orion.WhiteToMove){
+							backRow=Orion.WR|Orion.WB|Orion.WN|Orion.WQ|Orion.WK;
+							}
+						else{
+							backRow=Orion.BR|Orion.BB|Orion.BN|Orion.BQ|Orion.BK;
+						}
+						long rooks = Orion.WR|Orion.BR,bishops = Orion.WB|Orion.BB,
+								knights = Orion.WN|Orion.BN,queens=Orion.WQ|Orion.BQ,
+								kings=Orion.WK|Orion.BK;
+						if (move.length()==4){
+							long mask;
+							//rank or file specified
+							if (Character.isDigit(move.charAt(1))){
+								mask = Moves.RankMasks8[move.charAt(1)-'1'];
+							}
+							else{
+								mask = Moves.FileMasks8[move.charAt(1)-'a'];
+							}	
+							rooks &= mask;
+							bishops &= mask;
+							knights &= mask;
+							queens &= mask;
+							kings &= mask;
+						}
+						int x2 = backHalf.charAt(0)-'0';
+						int y2 = backHalf.charAt(1)-'0';
+						int iLocation = y2*8 + x2%8;
+						long movesForPiece;
+						long foundPiece;
+						if (move.charAt(0)=='R'){
+							//Rook
+							movesForPiece = Moves.HAndVMoves(iLocation); //rook
+							foundPiece = movesForPiece&backRow&rooks;
+						}
+						else if(move.charAt(0)=='B'){
+							//Bishop
+							movesForPiece = Moves.DAndAntiDMoves(iLocation); //bishop
+							foundPiece = movesForPiece&backRow&bishops;
+						}
+						else if(move.charAt(0)=='N'){
+							//Knight
+				            if (iLocation>18)
+				            {
+				            	movesForPiece=Moves.KNIGHT_SPAN<<(iLocation-18);
+				            }
+				            else {
+				            	movesForPiece=Moves.KNIGHT_SPAN>>(18-iLocation);
+				            }
+				            if (iLocation%8<4)
+				            {
+				            	movesForPiece &=~Moves.FILE_GH;
+				            }
+				            else {
+				            	movesForPiece &=~Moves.FILE_AB;
+				            }
+				            
+							foundPiece = movesForPiece&backRow&knights;
+						}
+						else if(move.charAt(0)=='Q'){
+							//Queen
+							movesForPiece = Moves.DAndAntiDMoves(iLocation)|Moves.HAndVMoves(iLocation); //queens
+							foundPiece = movesForPiece&backRow&queens;
+						}
+						else{
+							//King
+				            if (iLocation>9)
+				            {
+				            	movesForPiece=Moves.KING_SPAN<<(iLocation-9);
+				            }
+				            else {
+				            	movesForPiece=Moves.KING_SPAN>>(9-iLocation);
+				            }
+				            if (iLocation%8<4)
+				            {
+				            	movesForPiece &=~Moves.FILE_GH;
+				            }
+				            else {
+				            	movesForPiece &=~Moves.FILE_AB;
+				            }
+							foundPiece = movesForPiece&backRow&kings;
+						}
+						int x1 = Long.numberOfTrailingZeros(foundPiece)%8;
+						int y1 = Long.numberOfTrailingZeros(foundPiece)/8;
+						//get piece moves depending on piece type. And with piece type and back row to get the location of the piece
+						frontHalf = ""+x1+y1;
+					}
+				}
+				else{
+					//Moving piece is a pawn.
+					if (move.length()==3){
+						//Piece Capture
+						int x2 = backHalf.charAt(0)-'0';
+						int y2 = backHalf.charAt(1)-'0';
+						long attackedSquare = 1L<<(y2*8 + x2%8);
+						long allPieces = Orion.WP|Orion.WR|Orion.WB|Orion.WN|Orion.WQ|Orion.WK|Orion.BP|Orion.BR|Orion.BB|Orion.BN|Orion.BQ|Orion.BK;
+						if ((attackedSquare&allPieces)==0){
+							//En Passant
+							if (Orion.WhiteToMove){backHalf = "WE";}else{backHalf = "bE";}
+							frontHalf = ""+(char)('0'+move.charAt(0)-'a') + (char)('0'+move.charAt(1)-'a');
+						}
+						else{
+							//regular capture
+							int dy;
+							if (Orion.WhiteToMove){dy = -1;}else{dy=1;}
+							frontHalf = ""+(char)('0'+move.charAt(0)-'a') + (char)('0'+move.charAt(2)-'1'+dy);
+						}
+					}
+					else{
+						int x1 = backHalf.charAt(0)-'0'; //same as x2
+						int dy,y1;
+						long pawns;
+						if (Orion.WhiteToMove){dy = -1;pawns=Orion.WP;}else{dy=1;pawns=Orion.BP;}
+						int possibleFirsty1 = backHalf.charAt(1)-'0' + dy; //singlePawnPush
+						int possibleSecondy1= backHalf.charAt(1)-'0' + 2*dy; //doublePawnPush
+						if (((pawns>>(possibleFirsty1*8 + x1%8))&1L)!=0){
+							y1 = possibleFirsty1;
+						}
+						else{
+							y1 = possibleSecondy1;
+						}
+						frontHalf = ""+x1+y1;
+						//Pawn forward move
+						//Check one square back
+						//Check two squares back
+					}
+				}
+				coordinateMove = frontHalf+backHalf;
+				//System.out.println(coordinateMove);
+			}
+			
+			//Make move
+			int start=0,end=0;
+	        {
+	        	//Get start and end positions to check that we are not breaking castling rights
+	            if (Character.isDigit(coordinateMove.charAt(3))) {//'regular' move
+	                start=(Character.getNumericValue(coordinateMove.charAt(0)))+(Character.getNumericValue(coordinateMove.charAt(1))*8);
+	                end=(Character.getNumericValue(coordinateMove.charAt(2)))+(Character.getNumericValue(coordinateMove.charAt(3))*8);;
+	            } else if (coordinateMove.charAt(3)=='P') {//pawn promotion
+	                if (Character.isUpperCase(coordinateMove.charAt(2))) {
+	                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[coordinateMove.charAt(0)-'0']&Moves.RankMasks8[6]);
+	                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[coordinateMove.charAt(1)-'0']&Moves.RankMasks8[7]);
+	                } else {
+	                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[coordinateMove.charAt(0)-'0']&Moves.RankMasks8[1]);
+	                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[coordinateMove.charAt(1)-'0']&Moves.RankMasks8[0]);
+	                }
+	            } else if (coordinateMove.charAt(3)=='E') {//en passant
+	                if (coordinateMove.charAt(2)=='W') {
+	                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[coordinateMove.charAt(0)-'0']&Moves.RankMasks8[4]);
+	                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[coordinateMove.charAt(1)-'0']&Moves.RankMasks8[5]);
+	                } else {
+	                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[coordinateMove.charAt(0)-'0']&Moves.RankMasks8[3]);
+	                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[coordinateMove.charAt(1)-'0']&Moves.RankMasks8[2]);
+	                }
+	            }
+	            else{
+	            	System.out.println("An unrecognizable move was generated");
+	            }
+                //Always check if we are breaking the castling rights
+                //start=(Character.getNumericValue(moves.charAt(i))*8)+(Character.getNumericValue(moves.charAt(i+1)));
+                if (((1L<<start)&Orion.WK)!=0) {Orion.CWK=false; Orion.CWQ=false;}
+                if (((1L<<start)&Orion.BK)!=0) {Orion.CBK=false; Orion.CBQ=false;}
+                if ((((1L<<start)|(1L<<end))&Orion.WR&(1L<<7))!=0) {Orion.CWK=false;}
+                if ((((1L<<start)|(1L<<end))&Orion.WR&(1L))!=0) {Orion.CWQ=false;}
+                if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<63))!=0) {Orion.CBK=false;}
+                if ((((1L<<start)|(1L<<end))&Orion.BR&(1L<<56))!=0) {Orion.CBQ=false;}
+                
+                int numPiecesBefore = Rating.bitCount(Orion.WP|Orion.WN|Orion.WB|Orion.WR|Orion.WQ|Orion.WK|Orion.BP|Orion.BN|Orion.BB|Orion.BR|Orion.BQ|Orion.BK);
+                long WPBefore = Orion.WP;
+                long BPBefore = Orion.BP;
+                //Do the moves
+                Orion.EP=Moves.makeMoveEP(Orion.WP|Orion.BP,coordinateMove);
+                Orion.WR=Moves.makeMoveCastle(Orion.WR, Orion.WK|Orion.BK, coordinateMove, 'R');
+                Orion.BR=Moves.makeMoveCastle(Orion.BR, Orion.WK|Orion.BK, coordinateMove, 'r');
+                Orion.WP=Moves.makeMove(Orion.WP, coordinateMove, 'P');
+                Orion.WN=Moves.makeMove(Orion.WN, coordinateMove, 'N');
+                Orion.WB=Moves.makeMove(Orion.WB, coordinateMove, 'B');
+                Orion.WR=Moves.makeMove(Orion.WR, coordinateMove, 'R');
+                Orion.WQ=Moves.makeMove(Orion.WQ, coordinateMove, 'Q');
+                Orion.WK=Moves.makeMove(Orion.WK, coordinateMove, 'K');
+                Orion.BP=Moves.makeMove(Orion.BP, coordinateMove, 'p');
+                Orion.BN=Moves.makeMove(Orion.BN, coordinateMove, 'n');
+                Orion.BB=Moves.makeMove(Orion.BB, coordinateMove, 'b');
+                Orion.BR=Moves.makeMove(Orion.BR, coordinateMove, 'r');
+                Orion.BQ=Moves.makeMove(Orion.BQ, coordinateMove, 'q');
+                Orion.BK=Moves.makeMove(Orion.BK, coordinateMove, 'k');
+                Orion.WhiteToMove=!Orion.WhiteToMove;
+                
+                int numPiecesAfter = Rating.bitCount(Orion.WP|Orion.WN|Orion.WB|Orion.WR|Orion.WQ|Orion.WK|Orion.BP|Orion.BN|Orion.BB|Orion.BR|Orion.BQ|Orion.BK);
+                if ((numPiecesBefore==numPiecesAfter)&&(Orion.WP==WPBefore)&&(Orion.BP==BPBefore)){
+                	Orion.fiftyMoveCounter++;
+                }
+                else{
+                	Orion.fiftyMoveCounter = 0;
+                }
+	        }
+			
+			addToHistory();
+			Orion.HISTORY2.add(getBoardInformation());
+			//BoardGeneration.drawArray(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK);
+			//System.out.println();
+		}
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static ArrayList getBoardInformation(){
+		ArrayList boardInformation = new ArrayList();
+		boardInformation.add(Orion.WK);
+		boardInformation.add(Orion.WQ);
+		boardInformation.add(Orion.WB);
+		boardInformation.add(Orion.WN);
+		boardInformation.add(Orion.WR);
+		boardInformation.add(Orion.WP);
+		boardInformation.add(Orion.BK);
+		boardInformation.add(Orion.BQ);
+		boardInformation.add(Orion.BB);
+		boardInformation.add(Orion.BN);
+		boardInformation.add(Orion.BR);
+		boardInformation.add(Orion.BP);
+		boardInformation.add(Orion.EP);
+		boardInformation.add(Orion.CWK);
+		boardInformation.add(Orion.CWQ);
+		boardInformation.add(Orion.CBK);
+		boardInformation.add(Orion.CBQ);
+		boardInformation.add(Orion.WhiteHasCastled);
+		boardInformation.add(Orion.BlackHasCastled);
+		boardInformation.add(Orion.WhiteToMove);
 		return boardInformation;
 	}
 	
@@ -41,12 +352,13 @@ public class BoardGeneration {
 		   }
 		   return val;
 		}
+	/*
 	public String[][] makeFullBoard(){
 		//Create an 8x8 array which contains all the pieces of the board
 		
 		//Make board object and collect pieces
 		String[][] board = new String[8][8];
-		long[] boardInformation = getBoardInformation();
+		long[] boardInformation = Arrays.stream(getBoardInformation()).mapToLong(Long::longValue).toArray();
 		long [] whitePieces = Arrays.copyOfRange(boardInformation, 0, 6);
 		long [] blackPieces = Arrays.copyOfRange(boardInformation, 6, 12);
 		String [] pieceTypes = {"K","Q","B","N","R","P"};
@@ -71,6 +383,7 @@ public class BoardGeneration {
 		String[][] myBoard = this.makeFullBoard();
 		return gridToString(myBoard);
 	}
+	*/
 	
 	//Types of Boards
     public static void initiateDebugChess() {
@@ -196,6 +509,9 @@ public class BoardGeneration {
     	//Examples:
     	// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
     	// rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
+		Orion.HISTORY2 = new ArrayList<ArrayList>();
+	    Orion.WhiteHasCastled = false;
+	    Orion.BlackHasCastled = false;
     	Orion.WP=0; Orion.WN=0; Orion.WB=0;
     	Orion.WR=0; Orion.WQ=0; Orion.WK=0;
     	Orion.BP=0; Orion.BN=0; Orion.BB=0;
@@ -326,6 +642,7 @@ public class BoardGeneration {
         long boardHash = Zobrist.getZobristHash(Orion.WP,Orion.WN,Orion.WB,Orion.WR,Orion.WQ,Orion.WK,Orion.BP,Orion.BN,Orion.BB,Orion.BR,Orion.BQ,Orion.BK,Orion.EP,Orion.CWK,Orion.CWQ,Orion.CBK,Orion.CBQ,Orion.WhiteToMove);
         Orion.ThreeMoveRepCheck = new HashMap<Long,Integer> ();
         Orion.ThreeMoveRepCheck.put(boardHash, 1);
+        Orion.HISTORY2.add(getBoardInformation());
     }
     
     //Helper Functions
@@ -398,7 +715,36 @@ public class BoardGeneration {
             System.out.println(Arrays.toString(chessBoard[i]));
         }
 	}
-
+	@SuppressWarnings("rawtypes")
+	public static void drawArray(ArrayList boardInformation) {
+		long WK = (long) boardInformation.get(0),WQ = (long) boardInformation.get(1),
+				WB = (long) boardInformation.get(2),WN = (long) boardInformation.get(3),
+				WR = (long) boardInformation.get(4),WP = (long) boardInformation.get(5),
+				BK = (long) boardInformation.get(6),BQ = (long) boardInformation.get(7),
+				BB = (long) boardInformation.get(8),BN = (long) boardInformation.get(9),
+				BR = (long) boardInformation.get(10),BP = (long) boardInformation.get(11);
+        String chessBoard[][]=new String[8][8];
+        for (int i=0;i<64;i++) {
+            chessBoard[i/8][i%8]=" ";
+        }
+        for (int i=0;i<64;i++) {
+            if (((WP>>i)&1)==1) {chessBoard[7-i/8][i%8]="P";}
+            if (((WN>>i)&1)==1) {chessBoard[7-i/8][i%8]="N";}
+            if (((WB>>i)&1)==1) {chessBoard[7-i/8][i%8]="B";}
+            if (((WR>>i)&1)==1) {chessBoard[7-i/8][i%8]="R";}
+            if (((WQ>>i)&1)==1) {chessBoard[7-i/8][i%8]="Q";}
+            if (((WK>>i)&1)==1) {chessBoard[7-i/8][i%8]="K";}
+            if (((BP>>i)&1)==1) {chessBoard[7-i/8][i%8]="p";}
+            if (((BN>>i)&1)==1) {chessBoard[7-i/8][i%8]="n";}
+            if (((BB>>i)&1)==1) {chessBoard[7-i/8][i%8]="b";}
+            if (((BR>>i)&1)==1) {chessBoard[7-i/8][i%8]="r";}
+            if (((BQ>>i)&1)==1) {chessBoard[7-i/8][i%8]="q";}
+            if (((BK>>i)&1)==1) {chessBoard[7-i/8][i%8]="k";}
+        }
+        for (int i=0;i<8;i++) {
+            System.out.println(Arrays.toString(chessBoard[i]));
+        }
+	}
 	public static String makeHistoryFEN(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,int fiftyMoveCounter,int totalMoveCounter){
 		//Examples:
 		// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1

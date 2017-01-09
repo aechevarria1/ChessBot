@@ -51,8 +51,13 @@ public class UCI {
         //set options
     }
     public static void inputIsReady() {
-    	//TODO implement the Zorbist and TranspositionTable in principle variation
+    	//Set up the Zobrist Keys
     	Zobrist.zobristFillArray();
+    	//Initialize NeuralNetworkWeights
+    	//NeuralNetwork.loadWeights();
+    	//Initialize Machine Learning Coefficients
+    	//Changed the signs on some of the values in the machine learning file to make a second version
+    	//Rating.machineLearningCoefficients=MachineLearning.loadMachineLearningCoeffs("C:/Users/arinz/Desktop/ChessNotes/MachineLearningCoefficients2.csv", 60);
     	System.out.println("readyok");
     }
     public static void inputUCINewGame() {
@@ -138,8 +143,15 @@ public class UCI {
                     long BPBefore = Orion.BP;
                     //Do the moves
                     Orion.EP=Moves.makeMoveEP(Orion.WP|Orion.BP,moves.substring(i,i+4));
+                    long oldWR=Orion.WR,oldBR = Orion.BR;
                     Orion.WR=Moves.makeMoveCastle(Orion.WR, Orion.WK|Orion.BK, moves.substring(i,i+4), 'R');
                     Orion.BR=Moves.makeMoveCastle(Orion.BR, Orion.WK|Orion.BK, moves.substring(i,i+4), 'r');
+                    if(oldWR!=Orion.WR){
+                	    Orion.WhiteHasCastled = true;
+                    }
+                    if(oldBR!=Orion.BR){
+                	    Orion.BlackHasCastled = true;
+                    }
                     Orion.WP=Moves.makeMove(Orion.WP, moves.substring(i,i+4), 'P');
                     Orion.WN=Moves.makeMove(Orion.WN, moves.substring(i,i+4), 'N');
                     Orion.WB=Moves.makeMove(Orion.WB, moves.substring(i,i+4), 'B');
@@ -168,6 +180,7 @@ public class UCI {
     }
 	public static void inputGo(String input) {
 		input=input.concat(" ");
+		Orion.searchDepth = 4;
         if (input.contains("depth")) {
             input=input.substring(input.indexOf("depth")+6);
             Orion.searchDepth = Integer.parseInt(input.substring(0,input.indexOf(' ')));

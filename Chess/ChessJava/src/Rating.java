@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -10,9 +12,15 @@ public class Rating {
     }
     public static int evaluate2(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,boolean selfColorIsWhite) {
         /*
-         * Used for Scoring 8+
+         * Used for Scoring 8-15 and 17
          */
     	return Scoring15(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove,selfColorIsWhite);
+    }
+    public static int evaluate2(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean whiteHasCastled,boolean blackHasCastled,boolean WhiteToMove,boolean selfColorIsWhite) {
+        /*
+         * Used for Scoring 16 and 18
+         */
+    	return Scoring18(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,whiteHasCastled,blackHasCastled,WhiteToMove,selfColorIsWhite);
     }
     public static int Scoring2(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove){
     	/*
@@ -912,7 +920,7 @@ public class Rating {
         		}
         	}
 
-        	score = (int) (score - 12*sumDistances/numMyPawns);
+        	score = (int) (score - 12*sumDistances/(numMyPawns+numPawns));
         }
         
         //System.out.println(score);
@@ -1035,7 +1043,7 @@ public class Rating {
         		}
         	}
 
-        	score = (int) (score - 12*sumDistances/numMyPawns);
+        	score = (int) (score - 12*sumDistances/(numMyPawns+numPawns));
         }
         
         //Discourage premature queen usage. Only start developing queen after I have lost two pieces from bishop and knight
@@ -1176,7 +1184,7 @@ public class Rating {
         		}
         	}
 
-        	score = (int) (score - 12*sumDistances/numMyPawns);
+        	score = (int) (score - 12*sumDistances/(numMyPawns+numPawns));
         }
         
         //System.out.println(score);
@@ -1254,7 +1262,7 @@ public class Rating {
     	else if (usefulMyPieces==0){
     		// Don't lose enough pieces to the point where I can't force a checkmate
     		if ((numMyKnights<=2 && numMyBishops==0)||(numMyKnights==0 && numMyBishops==1)){
-    			return -Orion.MATE_SCORE;
+    			return -Orion.MATE_SCORE+1+Orion.searchDepth;
     		}
     	}
     	
@@ -1303,7 +1311,7 @@ public class Rating {
         		}
         	}
 
-        	score = (int) (score - 12*sumDistances/numMyPawns);
+        	score = (int) (score - 12*sumDistances/(numMyPawns+numPawns));
         }
         
         //Discourage premature queen usage. Only start developing queen after I have lost two pieces from bishop and knight
@@ -1354,7 +1362,324 @@ public class Rating {
     	return score;
     }
     
-	public static int bitCount(long i) {
+    public static double [] machineLearningCoefficients = {};
+    
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public static int Scoring16(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteHasCastled,boolean BlackHasCastled,boolean WhiteToMove,boolean selfColorIsWhite){
+    	/*
+    	 * Uses the results of the machine learning to try and score the board
+    	 */
+    	
+    	//Number of available moves
+    	double score=0;
+		ArrayList boardInformation = new ArrayList();
+		boardInformation.add(WK);
+		boardInformation.add(WQ);
+		boardInformation.add(WB);
+		boardInformation.add(WN);
+		boardInformation.add(WR);
+		boardInformation.add(WP);
+		boardInformation.add(BK);
+		boardInformation.add(BQ);
+		boardInformation.add(BB);
+		boardInformation.add(BN);
+		boardInformation.add(BR);
+		boardInformation.add(BP);
+		boardInformation.add(EP);
+		boardInformation.add(CWK);
+		boardInformation.add(CWQ);
+		boardInformation.add(CBK);
+		boardInformation.add(CBQ);
+		boardInformation.add(WhiteHasCastled);
+		boardInformation.add(BlackHasCastled);
+		boardInformation.add(WhiteToMove);
+		int[] values = MachineLearning.evaluate1(boardInformation);
+		for (int i=0;i<values.length;i++){
+			score += machineLearningCoefficients[i]*values[i];
+		}
+		if (!selfColorIsWhite){
+			//flip the score if black
+			score = -score;
+		}
+        //System.out.println(score);
+    	return (int) score;
+    }
+    
+
+    public static int Scoring17(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,boolean selfColorIsWhite){
+    	/*
+    	 * Similar to Scoring6 and Scoring10 but without the insufficient piece checking
+    	 * Weighs material value and number of available moves.
+    	 * Also considers threatened pieces.
+    	 * Less emphasis on threatened pieces than Scoring5
+    	 * Removed king threatening considerations
+    	 * Added a bias for moving pawns forward.
+    	 *  --> slight increase in weight of pawn distance from promotion from 8 to 12
+    	 */
+    	
+    	//Number of available moves
+        String moves;
+        if (selfColorIsWhite) {
+            moves=Moves.possibleMovesW(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        } else {
+            moves=Moves.possibleMovesB(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        }
+        moves = Moves.filterMoves(moves, WhiteToMove, WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK, EP);
+        int score = moves.length();
+        //Material value
+        long myQueens,yourQueens,myRooks,yourRooks,myKnights,yourKnights,myBishops,yourBishops,myPawns,yourPawns,myKing,yourKing;
+        int numQueens,numRooks,numBishops,numKnights,numPawns,numMyQueens,numMyRooks,numMyBishops,numMyKnights,numMyPawns;
+        if (selfColorIsWhite) {
+        	myQueens=WQ;yourQueens=BQ;
+        	myRooks=WR;yourRooks=BR;
+        	myKnights=WN;yourKnights=BN;
+        	myBishops=WB;yourBishops=BB;
+        	myPawns=WP;yourPawns=BP;
+        	myKing=WK;yourKing=BK;
+        	
+        }else{
+        	myQueens=BQ;yourQueens=WQ;
+        	myRooks=BR;yourRooks=WR;
+        	myKnights=BN;yourKnights=WN;
+        	myBishops=BB;yourBishops=WB;
+        	myPawns=BP;yourPawns=WP;
+        	myKing=BK;yourKing=WK;
+        }
+    	numQueens = bitCount(yourQueens);
+    	numRooks = bitCount(yourRooks);
+    	numBishops = bitCount(yourBishops);
+    	numKnights = bitCount(yourKnights);
+    	numPawns = bitCount(yourPawns);
+    	numMyQueens = bitCount(myQueens);
+    	numMyRooks = bitCount(myRooks);
+    	numMyBishops = bitCount(myBishops);
+    	numMyKnights = bitCount(myKnights);
+    	numMyPawns = bitCount(myPawns);
+    	
+        score = score - 900*numQueens-500*numRooks-300*numKnights-100*numPawns;
+        score = score+900*numMyQueens+500*numMyRooks+300*numMyKnights+100*numMyPawns;
+        
+        if (numMyBishops>=2){
+        	score+=numMyBishops*300;
+        }
+        else{
+        	score+=numMyBishops*250;
+        }
+        if (numBishops>=2){
+        	score-=numBishops*300;
+        }
+        else{
+        	score-=numBishops*250;
+        }
+        
+        //Weigh Threats
+        long unsafeForMe,unsafeForYou;
+        if (selfColorIsWhite) {
+        	unsafeForMe=Moves.unsafeForWhite(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK);
+        	unsafeForYou=Moves.unsafeForBlack(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK);
+        } else {
+        	unsafeForYou=Moves.unsafeForWhite(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK);
+        	unsafeForMe=Moves.unsafeForBlack(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK);
+        }
+        
+        int unsafeScore = 64*bitCount(yourPawns&unsafeForYou) + 300*bitCount((yourBishops|yourKnights)&unsafeForYou) + 500*bitCount(yourRooks&unsafeForYou) + 900*bitCount(yourQueens&unsafeForYou);
+        unsafeScore = unsafeScore - 64*bitCount(myPawns&unsafeForMe) - 300*bitCount((myBishops|myKnights)&unsafeForMe) - 500*bitCount(myRooks&unsafeForMe) - 900*bitCount(myQueens&unsafeForMe);
+        score += unsafeScore/4;
+        
+        
+        //Support moving pawns down toward promotion and penalize allowing opponent to move pawns
+        if ((numMyPawns|numPawns)!=0){
+        	List<Integer> pawnLocations = BoardGeneration.bitPositions(myPawns|numPawns);
+        	double sumDistances = 0;
+        	for (int i:pawnLocations){
+            	//If I am white, minimize the distance between pawn and rank 1
+        		if (selfColorIsWhite){
+        			sumDistances += (7-i/8);
+        		}
+            	//If I am black, minimize the distance between pawn and rank 8
+        		else{
+        			sumDistances += (i/8);
+        		}
+        	}
+
+        	score = (int) (score - 12*sumDistances/(numMyPawns+numPawns));
+        	//System.out.println(score);
+        }
+        //System.out.println(score);
+        //System.out.println(score);
+    	return score;
+    }
+    public static int Scoring17b(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteToMove,boolean selfColorIsWhite){
+    	/*
+    	 * Similar to Scoring6 and Scoring10 but without the insufficient piece checking
+    	 * Weighs material value and number of available moves.
+    	 * Also considers threatened pieces.
+    	 * Less emphasis on threatened pieces than Scoring5
+    	 * Removed king threatening considerations
+    	 * Added a bias for moving pawns forward.
+    	 *  --> slight increase in weight of pawn distance from promotion from 8 to 12
+    	 *  --> same as 17 but uses WhiteToMove instead of selfColorIsWhite
+    	 */
+    	
+    	//Number of available moves
+        String moves;
+        if (WhiteToMove) {
+            moves=Moves.possibleMovesW(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        } else {
+            moves=Moves.possibleMovesB(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        }
+        moves = Moves.filterMoves(moves, WhiteToMove, WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK, EP);
+        int score = moves.length();
+        //Material value
+        long myQueens,yourQueens,myRooks,yourRooks,myKnights,yourKnights,myBishops,yourBishops,myPawns,yourPawns,myKing,yourKing;
+        int numQueens,numRooks,numBishops,numKnights,numPawns,numMyQueens,numMyRooks,numMyBishops,numMyKnights,numMyPawns;
+        if (WhiteToMove) {
+        	myQueens=WQ;yourQueens=BQ;
+        	myRooks=WR;yourRooks=BR;
+        	myKnights=WN;yourKnights=BN;
+        	myBishops=WB;yourBishops=BB;
+        	myPawns=WP;yourPawns=BP;
+        	myKing=WK;yourKing=BK;
+        	
+        }else{
+        	myQueens=BQ;yourQueens=WQ;
+        	myRooks=BR;yourRooks=WR;
+        	myKnights=BN;yourKnights=WN;
+        	myBishops=BB;yourBishops=WB;
+        	myPawns=BP;yourPawns=WP;
+        	myKing=BK;yourKing=WK;
+        }
+    	numQueens = bitCount(yourQueens);
+    	numRooks = bitCount(yourRooks);
+    	numBishops = bitCount(yourBishops);
+    	numKnights = bitCount(yourKnights);
+    	numPawns = bitCount(yourPawns);
+    	numMyQueens = bitCount(myQueens);
+    	numMyRooks = bitCount(myRooks);
+    	numMyBishops = bitCount(myBishops);
+    	numMyKnights = bitCount(myKnights);
+    	numMyPawns = bitCount(myPawns);
+    	
+        score = score - 900*numQueens-500*numRooks-300*numKnights-100*numPawns;
+        score = score+900*numMyQueens+500*numMyRooks+300*numMyKnights+100*numMyPawns;
+        if (numMyBishops>=2){
+        	score+=numMyBishops*300;
+        }
+        else{
+        	score+=numMyBishops*250;
+        }
+        if (numBishops>=2){
+        	score-=numBishops*300;
+        }
+        else{
+        	score-=numBishops*250;
+        }
+        
+        //Weigh Threats
+        long unsafeForMe,unsafeForYou;
+        if (WhiteToMove) {
+        	unsafeForMe=Moves.unsafeForWhite(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK);
+        	unsafeForYou=Moves.unsafeForBlack(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK);
+        } else {
+        	unsafeForYou=Moves.unsafeForWhite(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK);
+        	unsafeForMe=Moves.unsafeForBlack(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK);
+        }
+        
+        int unsafeScore = 64*bitCount(yourPawns&unsafeForYou) + 300*bitCount((yourBishops|yourKnights)&unsafeForYou) + 500*bitCount(yourRooks&unsafeForYou) + 900*bitCount(yourQueens&unsafeForYou);
+        unsafeScore = unsafeScore - 64*bitCount(myPawns&unsafeForMe) - 300*bitCount((myBishops|myKnights)&unsafeForMe) - 500*bitCount(myRooks&unsafeForMe) - 900*bitCount(myQueens&unsafeForMe);
+        score += unsafeScore/4;
+        
+        
+        //Support moving pawns down toward promotion and penalize allowing opponent to move pawns
+        if ((numMyPawns|numPawns)!=0){
+        	List<Integer> pawnLocations = BoardGeneration.bitPositions(myPawns|numPawns);
+        	double sumDistances = 0;
+        	for (int i:pawnLocations){
+            	//If I am white, minimize the distance between pawn and rank 1
+        		if (WhiteToMove){
+        			sumDistances += (7-i/8);
+        		}
+            	//If I am black, minimize the distance between pawn and rank 8
+        		else{
+        			sumDistances += (i/8);
+        		}
+        	}
+
+        	score = (int) (score - 12*sumDistances/numMyPawns);
+        }
+        
+        //System.out.println(score);
+    	return score;
+    }
+
+    
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public static int Scoring18(long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteHasCastled,boolean BlackHasCastled,boolean WhiteToMove,boolean selfColorIsWhite){
+    	/*
+    	 * Uses the results of the machine learning to try and score the board
+    	 */
+    	
+    	//Number of available moves
+    	double score=0;
+		ArrayList boardInformation = new ArrayList();
+		boardInformation.add(WK);
+		boardInformation.add(WQ);
+		boardInformation.add(WB);
+		boardInformation.add(WN);
+		boardInformation.add(WR);
+		boardInformation.add(WP);
+		boardInformation.add(BK);
+		boardInformation.add(BQ);
+		boardInformation.add(BB);
+		boardInformation.add(BN);
+		boardInformation.add(BR);
+		boardInformation.add(BP);
+		boardInformation.add(EP);
+		boardInformation.add(CWK);
+		boardInformation.add(CWQ);
+		boardInformation.add(CBK);
+		boardInformation.add(CBQ);
+		boardInformation.add(WhiteHasCastled);
+		boardInformation.add(BlackHasCastled);
+		boardInformation.add(WhiteToMove);
+		int[] values = MachineLearning.evaluate1(boardInformation);
+		double[][] newValues = new double [1][21];
+		//Difference in pieces ignoring kings
+		for(int i=0;i<5;i++){
+			newValues[0][i] = values[i+1]-values[i+7];
+		}
+		//Protected white-threatened white
+		//Protected black-threatened black
+		for(int i=0;i<6;i++){
+			newValues[0][i+5] = values[i+26]-values[i+32];
+			newValues[0][i+11] = values[i+38]-values[i+44];
+		}
+		
+		//white has castled
+		newValues[0][17] = values[58];
+		//black has castled
+		newValues[0][18] = values[59];
+		//pawn distances/840
+		newValues[0][19] = (values[50]-values[51])/840.0;
+		// (whiteMoves-blackMoves)/20
+		int sumOfMoves = 0;
+		for(int i=0;i<6;i++){
+			sumOfMoves = sumOfMoves + values[i+12]-values[i+18];//regular moves
+		}
+		sumOfMoves = sumOfMoves + values[24]-values[25];//add castling
+		newValues[0][20] = sumOfMoves/20.0;
+		
+		//System.out.println(Arrays.toString(newValues[0]));
+		score = NeuralNetwork.Scoring18(newValues);
+		if (!selfColorIsWhite){
+			//flip the score if black
+			score = -score;
+		}
+        //System.out.println(score);
+    	return (int) score;
+    }
+    
+    public static int bitCount(long i) {
 	    /*
 	     * Counts the number of 1's in the binary form of a long.
 	     */
@@ -1427,6 +1752,95 @@ public class Rating {
 
 			//Score move
         	int score = myInt*Rating.evaluate2(WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,!WhiteToMove,selfColorIsWhite);
+			if (score>=firstBestScore){
+				otherMoves = secondBestMove + otherMoves;
+				secondBestMove = firstBestMove;
+				secondBestScore= firstBestScore;
+				firstBestMove = moves.substring(i, i+4);
+				firstBestScore = score;
+			}
+			else if (score>=secondBestScore){
+				otherMoves = secondBestMove + otherMoves;
+				secondBestMove = moves.substring(i, i+4);
+				secondBestScore= score;
+			}
+			else{
+				otherMoves += moves.substring(i, i+4);
+			}
+		}
+		return firstBestMove+secondBestMove+otherMoves;
+	}
+
+	public static String sortMoves(String moves,long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteHasCastled,boolean BlackHasCastled,boolean WhiteToMove,boolean selfColorIsWhite){
+		int firstBestScore = -100000;
+		int secondBestScore = -100000;
+		String firstBestMove = "";
+		String secondBestMove = "";
+		String otherMoves ="";
+		int myInt = (selfColorIsWhite==WhiteToMove) ? 1 : -1;
+
+		for (int i=0;i<moves.length();i+=4){
+			//Make move
+            boolean WhiteHasCastledt=WhiteHasCastled,
+            		BlackHasCastledt=BlackHasCastled;
+            long 
+            WPt=Moves.makeMove(WP, moves.substring(i,i+4), 'P'),
+            WNt=Moves.makeMove(WN, moves.substring(i,i+4), 'N'),
+            WBt=Moves.makeMove(WB, moves.substring(i,i+4), 'B'),
+            WRt=Moves.makeMove(WR, moves.substring(i,i+4), 'R'),
+            WQt=Moves.makeMove(WQ, moves.substring(i,i+4), 'Q'),
+            WKt=Moves.makeMove(WK, moves.substring(i,i+4), 'K'),
+            BPt=Moves.makeMove(BP, moves.substring(i,i+4), 'p'),
+            BNt=Moves.makeMove(BN, moves.substring(i,i+4), 'n'),
+            BBt=Moves.makeMove(BB, moves.substring(i,i+4), 'b'),
+            BRt=Moves.makeMove(BR, moves.substring(i,i+4), 'r'),
+            BQt=Moves.makeMove(BQ, moves.substring(i,i+4), 'q'),
+            BKt=Moves.makeMove(BK, moves.substring(i,i+4), 'k'),
+            EPt=Moves.makeMoveEP(WP|BP,moves.substring(i,i+4));
+            long oldWR=WRt,oldBR = BRt;
+            WRt=Moves.makeMoveCastle(WRt, WK|BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, WK|BK, moves.substring(i,i+4), 'r');
+            if(oldWR!=WRt){
+        	    WhiteHasCastledt = true;
+            }
+            if(oldBR!=BRt){
+        	    BlackHasCastledt = true;
+            }
+            boolean CWKt=CWK,
+            CWQt=CWQ,
+            CBKt=CBK,
+            CBQt=CBQ;
+            int start=0,end=0;
+            if (Character.isDigit(moves.charAt(i+3))) {//'regular' move
+                start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
+                end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);;
+            } else if (moves.charAt(i+3)=='P') {//pawn promotion
+                if (Character.isUpperCase(moves.charAt(i+2))) {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[6]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[7]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[1]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[0]);
+                }
+            } else if (moves.charAt(i+3)=='E') {//en passant
+                if (moves.charAt(i+2)=='W') {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[4]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[5]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[3]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[2]);
+                }
+            }
+            //Always check if we are breaking the castling
+            if (((1L<<start)&WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<56))!=0) {CBQt=false;}
+
+			//Score move
+        	int score = myInt*Rating.evaluate2(WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,WhiteHasCastledt,BlackHasCastledt,!WhiteToMove,selfColorIsWhite);
 			if (score>=firstBestScore){
 				otherMoves = secondBestMove + otherMoves;
 				secondBestMove = firstBestMove;

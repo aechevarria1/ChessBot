@@ -915,11 +915,23 @@ public class PrincipalVariation {
         }
         
         int myInt = (selfColorIsWhite==WhiteToMove) ? 1 : -1;
-        if (fiftyMoveCounter==48||(Orion.ThreeMoveRepCheck.containsKey(boardHash)&&Orion.ThreeMoveRepCheck.get(boardHash)>=2)){
+        if ((!(Orion.searchDepth==depth))&&(fiftyMoveCounter==48||(Orion.ThreeMoveRepCheck.containsKey(boardHash)&&Orion.ThreeMoveRepCheck.get(boardHash)>=2))){
     		//Stalemate 3 fold repetition
         	//return myInt*(-Orion.MATE_SCORE/2);
         	//System.out.println("50move or 3rep return");
-        	return depth+Orion.MATE_SCORE/2;
+        	int bestScore = myInt*Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove,selfColorIsWhite);
+        	//int bestScore = myInt*Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,selfColorIsWhite);
+        	//System.out.println(bestScore);
+        	if (bestScore>=550){
+        		//stalemate good
+        		//System.out.println("Stalemate Good");
+        		return -(depth+Orion.MATE_SCORE/2);
+        	}
+        	else{
+        		//stalemate bad
+        		//System.out.println("Stalemate Bad");
+        		return (depth+Orion.MATE_SCORE/2);
+        	}
         }
         
     	int bestScore;
@@ -947,12 +959,23 @@ public class PrincipalVariation {
         	//System.out.println("no moves return");
         	if (unsafeMe){
         		//Checkmate
-        		
+        		//System.out.println("Mate Found");
         		return -(Orion.MATE_SCORE+depth);//*myInt; //subtracted depth so moves that lead to checkmate faster are chosen
         	}
         	else{
         		//Stalemate
-        		return -(-depth-Orion.MATE_SCORE/2);//*myInt;
+        		bestScore = myInt*Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove,selfColorIsWhite);
+        		//bestScore = myInt*Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,selfColorIsWhite);
+        		//System.out.println("Stalemate found");
+            	if (bestScore>=550){
+            		//stalemate good
+            		return -(depth+Orion.MATE_SCORE/2);
+            	}
+            	else{
+            		//stalemate bad
+            		return (depth+Orion.MATE_SCORE/2);
+            	}
+        		//return -(-depth-Orion.MATE_SCORE/2);//*myInt;
         	}
 
             //return WhiteToMove ? Orion.MATE_SCORE : -Orion.MATE_SCORE;
@@ -962,6 +985,7 @@ public class PrincipalVariation {
         {
         	bestScore = myInt*Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove,selfColorIsWhite);
         	//bestScore = myInt*Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,selfColorIsWhite);
+        	
             return bestScore;
         }
         
@@ -977,6 +1001,7 @@ public class PrincipalVariation {
         }
         
         for (int i=0;i<moves.length();i+=4) {
+        	//System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4)));
             int score;
             //legal, non-castle move
             long 
@@ -1092,5 +1117,244 @@ public class PrincipalVariation {
         return alpha;
     }
 
-    
+
+    public static int pvSearch6(int alpha,int beta,long WP,long WN,long WB,long WR,long WQ,long WK,long BP,long BN,long BB,long BR,long BQ,long BK,long EP,boolean CWK,boolean CWQ,boolean CBK,boolean CBQ,boolean WhiteHasCastled,boolean BlackHasCastled,boolean WhiteToMove,int depth,boolean selfColorIsWhite,int fiftyMoveCounter,int moveCounter) {//using fail soft with negamax
+    	/*
+    	 * Includes the first move in the alpha beta pruning process and speeds things up 2-4x compared to pvSearch3
+    	 * Incorporates transposition tables.
+    	 * Used for machine learning scoring
+    	 */
+    	
+    	Orion.nodesSearchedCounter++;
+        Long boardHash = Zobrist.getZobristHash(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove);
+        
+        //Transposition Table Look-Up
+        int alphaOrig = alpha;
+        if (TranspositionTable.contains(boardHash)&&TranspositionTable.getDepth(boardHash)>=depth){
+        	if ("EXACT".equals(TranspositionTable.getFlag(boardHash))){
+        		
+        	}
+        	else if ("LOWERBOUND".equals(TranspositionTable.getFlag(boardHash))){
+        		alpha = Math.max(alpha, TranspositionTable.getValue(boardHash));
+        	}
+        	else if("UPPERBOUND".equals(TranspositionTable.getFlag(boardHash))){
+        		beta = Math.min(beta, TranspositionTable.getValue(boardHash));
+        	}
+        	if (alpha>=beta){
+        		//System.out.println("Transposition return");
+        		return TranspositionTable.getValue(boardHash);
+        	}
+        }
+        
+        int myInt = (selfColorIsWhite==WhiteToMove) ? 1 : -1;
+        if (fiftyMoveCounter==48||(Orion.ThreeMoveRepCheck.containsKey(boardHash)&&Orion.ThreeMoveRepCheck.get(boardHash)>=2)){
+    		//Stalemate 3 fold repetition
+        	//return myInt*(-Orion.MATE_SCORE/2);
+        	//System.out.println("50move or 3rep return");
+        	return depth+Orion.MATE_SCORE/2;
+    		/*int bestScore = myInt*Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteHasCastled,BlackHasCastled,WhiteToMove,selfColorIsWhite);
+        	bestScore = myInt*Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove,selfColorIsWhite);
+        	bestScore = myInt*Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,selfColorIsWhite);
+        	if (bestScore>=550){
+        		//stalemate good
+        		return -(depth+Orion.MATE_SCORE/2);
+        	}
+        	else{
+        		//stalemate bad
+        		return (depth+Orion.MATE_SCORE/2);
+        	}*/
+        }
+        
+    	int bestScore;
+    	String bestMoves = "";
+        String moves;
+        if (WhiteToMove) {
+            moves=Moves.possibleMovesW(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        } else {
+            moves=Moves.possibleMovesB(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ);
+        }
+        moves = Moves.filterMoves(moves, WhiteToMove, WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK, EP);
+
+        if (moves.length() == 0)
+        {
+        	boolean unsafeMe;
+        	if (WhiteToMove){
+        		unsafeMe = (WK&Moves.unsafeForWhite(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK))!=0;
+        		
+        	}
+        	else{
+        		unsafeMe = (BK&Moves.unsafeForBlack(WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK))!=0;
+        	}
+        	//int myInt = (selfColorIsWhite==WhiteToMove) ? 1 : -1;
+        	//Note: Scores are opposite of what would be expected because we are collecting the negative of pvs
+        	//System.out.println("no moves return");
+        	if (unsafeMe){
+        		//Checkmate
+        		
+        		return -(Orion.MATE_SCORE+depth);//*myInt; //subtracted depth so moves that lead to checkmate faster are chosen
+        	}
+        	else{
+        		//Stalemate
+        		return -(-depth-Orion.MATE_SCORE/2);//*myInt;
+        		/*bestScore = myInt*Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteHasCastled,BlackHasCastled,WhiteToMove,selfColorIsWhite);
+        		bestScore = myInt*Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove,selfColorIsWhite);
+        		bestScore = myInt*Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,selfColorIsWhite);
+            	if (bestScore>=550){
+            		//stalemate good
+            		return -(depth+Orion.MATE_SCORE/2);
+            	}
+            	else{
+            		//stalemate bad
+            		return (depth+Orion.MATE_SCORE/2);
+            	}*/
+        	}
+
+            //return WhiteToMove ? Orion.MATE_SCORE : -Orion.MATE_SCORE;
+        }
+        
+        if (depth == 0)
+        {
+        	bestScore = myInt*Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteHasCastled,BlackHasCastled,WhiteToMove,selfColorIsWhite);
+    		//bestScore = myInt*Rating.evaluate2(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteToMove,selfColorIsWhite);
+    		//bestScore = myInt*Rating.evaluate(WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,selfColorIsWhite);
+            return bestScore;
+        }
+        
+        //sortMoves();
+        moves = Rating.sortMoves(moves,WP,WN,WB,WR,WQ,WK,BP,BN,BB,BR,BQ,BK,EP,CWK,CWQ,CBK,CBQ,WhiteHasCastled,BlackHasCastled,WhiteToMove,selfColorIsWhite);
+        
+        //Update the hashmap that checks for three fold repetition
+        if (Orion.ThreeMoveRepCheck.containsKey(boardHash)){
+        	Orion.ThreeMoveRepCheck.put(boardHash, Orion.ThreeMoveRepCheck.get(boardHash)+1);
+        }
+        else{
+        	Orion.ThreeMoveRepCheck.put(boardHash, 1);
+        }
+        
+        for (int i=0;i<moves.length();i+=4) {
+            int score;
+            //legal, non-castle move
+            boolean WhiteHasCastledt=WhiteHasCastled,
+            		BlackHasCastledt=BlackHasCastled;
+            long 
+            WPt=Moves.makeMove(WP, moves.substring(i,i+4), 'P'),
+            WNt=Moves.makeMove(WN, moves.substring(i,i+4), 'N'),
+            WBt=Moves.makeMove(WB, moves.substring(i,i+4), 'B'),
+            WRt=Moves.makeMove(WR, moves.substring(i,i+4), 'R'),
+            WQt=Moves.makeMove(WQ, moves.substring(i,i+4), 'Q'),
+            WKt=Moves.makeMove(WK, moves.substring(i,i+4), 'K'),
+            BPt=Moves.makeMove(BP, moves.substring(i,i+4), 'p'),
+            BNt=Moves.makeMove(BN, moves.substring(i,i+4), 'n'),
+            BBt=Moves.makeMove(BB, moves.substring(i,i+4), 'b'),
+            BRt=Moves.makeMove(BR, moves.substring(i,i+4), 'r'),
+            BQt=Moves.makeMove(BQ, moves.substring(i,i+4), 'q'),
+            BKt=Moves.makeMove(BK, moves.substring(i,i+4), 'k'),
+            EPt=Moves.makeMoveEP(WP|BP,moves.substring(i,i+4));
+            long oldWR=WRt,oldBR = BRt;
+            WRt=Moves.makeMoveCastle(WRt, WK|BK, moves.substring(i,i+4), 'R');
+            BRt=Moves.makeMoveCastle(BRt, WK|BK, moves.substring(i,i+4), 'r');
+            if(oldWR!=WRt){
+        	    WhiteHasCastledt = true;
+            }
+            if(oldBR!=BRt){
+        	    BlackHasCastledt = true;
+            }
+            boolean CWKt=CWK,
+            CWQt=CWQ,
+            CBKt=CBK,
+            CBQt=CBQ;
+            int start=0,end=0;
+            if (Character.isDigit(moves.charAt(i+3))) {//'regular' move
+                start=(Character.getNumericValue(moves.charAt(i)))+(Character.getNumericValue(moves.charAt(i+1))*8);
+                end=(Character.getNumericValue(moves.charAt(i+2)))+(Character.getNumericValue(moves.charAt(i+3))*8);;
+            } else if (moves.charAt(i+3)=='P') {//pawn promotion
+                if (Character.isUpperCase(moves.charAt(i+2))) {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[6]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[7]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[1]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[0]);
+                }
+            } else if (moves.charAt(i+3)=='E') {//en passant
+                if (moves.charAt(i+2)=='W') {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[4]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[5]);
+                } else {
+                    start=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+0)-'0']&Moves.RankMasks8[3]);
+                    end=Long.numberOfTrailingZeros(Moves.FileMasks8[moves.charAt(i+1)-'0']&Moves.RankMasks8[2]);
+                }
+            }
+            //Always check if we are breaking the castling
+            if (((1L<<start)&WK)!=0) {CWKt=false; CWQt=false;}
+            if (((1L<<start)&BK)!=0) {CBKt=false; CBQt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L<<7))!=0) {CWKt=false;}
+            if ((((1L<<start)|(1L<<end))&WR&(1L))!=0) {CWQt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<63))!=0) {CBKt=false;}
+            if ((((1L<<start)|(1L<<end))&BR&(1L<<56))!=0) {CBQt=false;}
+            
+            int numPiecesBefore = Rating.bitCount(WP|WN|WB|WR|WQ|WK|BP|BN|BB|BR|BQ|BK);
+            int numPiecesAfter = Rating.bitCount(WPt|WNt|WBt|WRt|WQt|WKt|BPt|BNt|BBt|BRt|BQt|BKt);
+            int fiftyMoveCountert;
+            if ((numPiecesBefore==numPiecesAfter)&&(WP==WPt)&&(BP==BPt)){
+            	fiftyMoveCountert = fiftyMoveCounter+1;
+            }
+            else{
+            	fiftyMoveCountert = 0;
+            }
+
+            //System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4)));
+            if (i!=0){
+            	score = -pvSearch6(-alpha-1,-alpha,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,WhiteHasCastledt,BlackHasCastledt,!WhiteToMove,depth-1,selfColorIsWhite,fiftyMoveCountert,moveCounter+1);
+            	if (score>alpha && score<beta){
+            		score = -pvSearch6(-beta,-score,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,WhiteHasCastledt,BlackHasCastledt,!WhiteToMove,depth-1,selfColorIsWhite,fiftyMoveCountert,moveCounter+1);
+            	}
+            }
+            else{
+            	score = -pvSearch6(-beta,-alpha,WPt,WNt,WBt,WRt,WQt,WKt,BPt,BNt,BBt,BRt,BQt,BKt,EPt,CWKt,CWQt,CBKt,CBQt,WhiteHasCastledt,BlackHasCastledt,!WhiteToMove,depth-1,selfColorIsWhite,fiftyMoveCountert,moveCounter+1);
+            }
+            /*if (depth==Orion.searchDepth){
+            	System.out.println(UCI.moveToAlgebra(moves.substring(i, i+4))+" had a score of :"+score);
+            	//System.out.println("alpha:"+alpha+", beta"+beta);
+            }*/
+            
+            //alpha = Math.max(alpha, score);
+            if (score>alpha||i==0){
+            	alpha=score;
+            	bestMoves=moves.substring(i, i+4);
+            }
+            else if(score==alpha){
+            	bestMoves+=moves.substring(i, i+4);
+            }
+            if (alpha>=beta){
+            	break;
+            }
+        }
+        //Remove the value from the 3 fold repetition checker
+    	Orion.ThreeMoveRepCheck.put(boardHash, Orion.ThreeMoveRepCheck.get(boardHash)-1);
+    	//If we have found the best Move
+    	if (depth==Orion.searchDepth){
+    		//System.out.println(bestMoves);
+    		int index=(int)(Math.floor(Math.random()*(bestMoves.length()/4))*4);
+    		Strategies.bestMove = UCI.moveToAlgebra(bestMoves.substring(index, index+4));
+    		//System.out.println("bestmove "+UCI.moveToAlgebra(bestMoves.substring(index, index+4)));
+    	}
+    	
+    	//Store node in transposition table
+    	int ttVal = alpha;
+    	String ttFlag;
+    	if (ttVal<=alphaOrig){
+    		ttFlag = "UPPERBOUND";
+    	}
+    	else if (ttVal>=beta){
+    		ttFlag = "LOWERBOUND";
+    	}
+    	else{
+    		ttFlag = "EXACT";
+    	}
+    	TranspositionTable.addValue(boardHash, depth, ttFlag, ttVal);
+    	//System.out.println("normal return");
+        return alpha;
+    }
+
+
 }
